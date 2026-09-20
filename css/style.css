@@ -1,0 +1,226 @@
+body {
+    font-family: 'Inter', 'Noto Sans SC', sans-serif;
+    background-color: #f8fafc;
+}
+
+/* Container 2 Kolom untuk Live Preview & Cetak */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px;
+    justify-items: center;
+}
+
+/* Area Garis Putus-Putus Pembatas Gunting */
+.cut-box {
+    position: relative;
+    padding: 12px;
+    border: 2px dashed #64748b;
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+    page-break-inside: avoid;
+    break-inside: avoid;
+    transition: all 0.2s ease;
+}
+
+/* Indikator Gunting di Luar Kartu */
+.cut-indicator {
+    position: absolute;
+    top: -11px;
+    left: 14px;
+    background-color: #ffffff;
+    padding: 0 6px;
+    font-size: 10px;
+    color: #475569;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    z-index: 10;
+    border-radius: 4px;
+}
+
+/* Dimensi Presisi Label: 2.90 in x 1.83 in */
+.asset-card {
+    width: 2.90in;
+    height: 1.83in;
+    box-sizing: border-box;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 2px solid #4b5563;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Header Metallic Silver */
+.asset-header {
+    background: linear-gradient(135deg, #374151 0%, #6b7280 50%, #1f2937 100%);
+    color: #ffffff;
+    height: 0.38in;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom: 1px solid #374151;
+    position: relative;
+}
+
+.asset-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.25), rgba(255,255,255,0));
+    pointer-events: none;
+}
+
+/* Table Internal Rounded Corners */
+.asset-table {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 1.45in;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: #ffffff;
+}
+
+.asset-row {
+    display: flex;
+    border-bottom: 1px solid #6b7280;
+    height: calc(1.45in / 6);
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.asset-row:last-child {
+    border-bottom: none;
+}
+
+.asset-row:last-child .asset-label {
+    border-bottom-left-radius: 6px;
+}
+
+.asset-row:last-child .asset-value {
+    border-bottom-right-radius: 6px;
+}
+
+.asset-label {
+    width: 42%;
+    height: 100%;
+    border-right: 1px solid #6b7280;
+    display: flex;
+    align-items: center;
+    padding: 0 3px;
+    background-color: #f1f5f9;
+    box-sizing: border-box;
+}
+
+.asset-value {
+    width: 58%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    box-sizing: border-box;
+}
+
+.asset-input-direct {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-weight: 700;
+    color: #0f172a;
+    font-size: 8px;
+    line-height: 1;
+    padding: 0;
+    margin: 0;
+}
+
+.asset-input-direct:focus {
+    background-color: #e2e8f0;
+    border-radius: 2px;
+}
+
+/* Pengaturan Media Cetak / Print Presisi */
+@media print {
+    body {
+        background-color: #ffffff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    .print-container {
+        display: grid !important;
+        grid-template-columns: repeat(2, auto) !important;
+        gap: 0.25in !important;
+        width: 100% !important;
+        padding: 0.2in !important;
+        margin: 0 !important;
+    }
+
+    .cut-box {
+        border: 2px dashed #334155 !important;
+        padding: 12px !important;
+        box-shadow: none !important;
+        border-radius: 10px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    .cut-indicator {
+        color: #334155 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .asset-card {
+        width: 2.90in !important;
+        height: 1.83in !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border: 2px solid #4b5563 !important;
+        border-radius: 8px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .asset-header {
+        background: linear-gradient(135deg, #374151 0%, #6b7280 50%, #1f2937 100%) !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    .asset-label {
+        background-color: #f1f5f9 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    @page {
+        size: A4 portrait;
+        margin: 5mm;
+    }
+}
+
+@media (max-width: 640px) {
+    .cards-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}
