@@ -384,9 +384,11 @@ function saveToDatabase() {
         })
         .then(data => {
             if (data.status === 'success') {
-                alert(data.message);
                 if (statusText) statusText.textContent = "Tersimpan di DB";
                 if (badge) badge.className = "inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
+                if (confirm(data.message + "\n\nApakah Anda ingin membuka halaman List View sekarang?")) {
+                    window.location.href = 'list_view.php'; // Buka halaman listview
+                }
             } else {
                 alert('Gagal menyimpan: ' + data.message);
                 if (statusText) statusText.textContent = "Gagal Simpan";
