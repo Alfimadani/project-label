@@ -334,3 +334,60 @@ window.onload = function() {
     loadSavedCards();
     renderCards();
 };
+
+function saveToDatabase() {
+    if (!cards || cards.length === 0) {
+        alert("Tidak ada data label untuk disimpan!");
+        return;
+    }
+
+    // 1. Deteksi duplikasi No. Aset di antara kartu yang sedang diisi
+    const filledAssetNumbers = cards
+        .map(c => c.noAset ? c.noAset.trim() : '')
+        .filter(no => no !== '');
+
+    const duplicates = filledAssetNumbers.filter((item, index) => filledAssetNumbers.indexOf(item) !== index);
+
+    if (duplicates.length > 0) {
+        // Hilangkan duplikat nama untuk pesan notifikasi
+        const uniqueDuplicates = [...new Set(duplicates)];
+        alert(`Peringatan: Terdapat Nomor Aset yang ganda/sama!\n\nNo. Aset ganda: ${uniqueDuplicates.join(', ')}\n\nSilakan perbaiki terlebih dahulu sebelum menyimpan.`);
+        return; // Hentikan proses simpan
+    }
+
+    const badge = document.getElementById('saveBadge');
+    const statusText = document.getElementById('saveStatusText');
+    
+    if (statusText) statusText.textContent = "Menyimpan ke DB...";
+    if (badge) badge.className = "inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
+
+    // 2. Kirim data ke backend jika tidak ada duplikasi
+    fetch('api/save_labels.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(cards)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('HTTP Error Status: ' + response.status);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.status === 'success') {
+            alert(data.message);
+            if (statusText) statusText.textContent = "Tersimpan di DB";
+            if (badge) badge.className = "inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
+        } else {
+            alert('Gagal menyimpan: ' + data.message);
+            if (statusText) statusText.textContent = "Gagal Simpan";
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan koneksi ke server: ' + error.message);
+        if (statusText) statusText.textContent = "Error Server";
+    });
+}
