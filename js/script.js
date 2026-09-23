@@ -25,6 +25,27 @@ const defaultSampleData = [
 
 let cards = [];
 
+// Tambahkan helper konversi tanggal ke YYYY-MM-DD
+function formatToYYYYMMDD(dateStr) {
+    if (!dateStr) return getFormattedToday();
+    
+    // Jika format sudah YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        return dateStr;
+    }
+    
+    // Jika format DD/MM/YYYY atau DD-MM-YYYY
+    if (dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        if (parts.length === 3) {
+            // Asumsi input DD/MM/YYYY
+            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+        }
+    }
+    
+    return dateStr;
+}
+
 // Muat data dari LocalStorage
 function loadSavedCards() {
     try {
@@ -32,7 +53,11 @@ function loadSavedCards() {
         if (saved) {
             const parsed = JSON.parse(saved);
             if (Array.isArray(parsed) && parsed.length > 0) {
-                cards = parsed;
+                // Pastikan semua tanggal terkonversi ke YYYY-MM-DD
+                cards = parsed.map(card => ({
+                    ...card,
+                    waktuPenggunaan: formatToYYYYMMDD(card.waktuPenggunaan)
+                }));
                 return;
             }
         }
@@ -204,7 +229,7 @@ function renderCards() {
                             </div>
                         </div>
                         <div class="asset-value">
-                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.waktuPenggunaan)}" oninput="updateCardData(${card.id}, 'waktuPenggunaan', this.value)" placeholder="Waktu Penggunaan..." required>
+                            <input type="date" class="asset-input-direct" value="${escapeHtml(card.waktuPenggunaan)}" oninput="updateCardData(${card.id}, 'waktuPenggunaan', this.value)" placeholder="Waktu Penggunaan..." required>
                         </div>
                     </div>
                 </div>
@@ -242,7 +267,7 @@ function addNewCard() {
         spesifikasi: "",
         pengguna: "",
         deptLokasi: "",
-        waktuPenggunaan: new Date().toISOString().split('T')[0]
+        waktuPenggunaan: getFormattedToday()
     });
     saveCardsToStorage();
     renderCards();
@@ -399,4 +424,13 @@ function saveToDatabase() {
             alert('Terjadi kesalahan koneksi ke server: ' + error.message);
             if (statusText) statusText.textContent = "Error Server";
         });
+}
+
+// Tambahkan fungsi helper untuk format tanggal standar YYYY-MM-DD
+function getFormattedToday() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`; // Menghasilkan "2026-09-21"
 }
