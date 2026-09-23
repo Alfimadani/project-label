@@ -124,7 +124,7 @@ function renderCards() {
                             </div>
                         </div>
                         <div class="asset-value">
-                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.noAset)}" oninput="updateCardData(${card.id}, 'noAset', this.value)" placeholder="No. Aset...">
+                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.noAset)}" oninput="updateCardData(${card.id}, 'noAset', this.value)" placeholder="No. Aset..." required>
                         </div>
                     </div>
 
@@ -140,7 +140,7 @@ function renderCards() {
                             </div>
                         </div>
                         <div class="asset-value">
-                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.namaAset)}" oninput="updateCardData(${card.id}, 'namaAset', this.value)" placeholder="Nama Aset...">
+                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.namaAset)}" oninput="updateCardData(${card.id}, 'namaAset', this.value)" placeholder="Nama Aset..." required>
                         </div>
                     </div>
 
@@ -156,7 +156,7 @@ function renderCards() {
                             </div>
                         </div>
                         <div class="asset-value">
-                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.spesifikasi)}" oninput="updateCardData(${card.id}, 'spesifikasi', this.value)" placeholder="Spesifikasi / Tipe...">
+                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.spesifikasi)}" oninput="updateCardData(${card.id}, 'spesifikasi', this.value)" placeholder="Spesifikasi / Tipe..." required>
                         </div>
                     </div>
 
@@ -172,7 +172,7 @@ function renderCards() {
                             </div>
                         </div>
                         <div class="asset-value">
-                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.pengguna)}" oninput="updateCardData(${card.id}, 'pengguna', this.value)" placeholder="Pengguna...">
+                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.pengguna)}" oninput="updateCardData(${card.id}, 'pengguna', this.value)" placeholder="Pengguna..." required>
                         </div>
                     </div>
 
@@ -188,7 +188,7 @@ function renderCards() {
                             </div>
                         </div>
                         <div class="asset-value">
-                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.deptLokasi)}" oninput="updateCardData(${card.id}, 'deptLokasi', this.value)" placeholder="Departement / Lokasi...">
+                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.deptLokasi)}" oninput="updateCardData(${card.id}, 'deptLokasi', this.value)" placeholder="Departement / Lokasi..." required>
                         </div>
                     </div>
 
@@ -204,7 +204,7 @@ function renderCards() {
                             </div>
                         </div>
                         <div class="asset-value">
-                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.waktuPenggunaan)}" oninput="updateCardData(${card.id}, 'waktuPenggunaan', this.value)" placeholder="Waktu Penggunaan...">
+                            <input type="text" class="asset-input-direct" value="${escapeHtml(card.waktuPenggunaan)}" oninput="updateCardData(${card.id}, 'waktuPenggunaan', this.value)" placeholder="Waktu Penggunaan..." required>
                         </div>
                     </div>
                 </div>
@@ -323,14 +323,14 @@ function executeClearAllCards() {
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/"/g, "&quot;")
-              .replace(/'/g, "&#039;");
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
 // Inisialisasi saat halaman dimuat
-window.onload = function() {
+window.onload = function () {
     loadSavedCards();
     renderCards();
 };
@@ -341,27 +341,34 @@ function saveToDatabase() {
         return;
     }
 
-    // 1. Deteksi duplikasi No. Aset di antara kartu yang sedang diisi
-    const filledAssetNumbers = cards
-        .map(c => c.noAset ? c.noAset.trim() : '')
-        .filter(no => no !== '');
+    // 1. Validasi: Cek apakah ada field/input yang masih kosong di setiap kartu
+    for (let i = 0; i < cards.length; i++) {
+        const c = cards[i];
+        if (!c.noAset?.trim() || !c.namaAset?.trim() || !c.spesifikasi?.trim() ||
+            !c.pengguna?.trim() || !c.deptLokasi?.trim() || !c.waktuPenggunaan?.trim()) {
 
+            alert(`Gagal Menyimpan!\n\nSemua kolom input pada Label Ke-${i + 1} wajib diisi lengkap.`);
+            return; // Hentikan proses jika ada input kosong
+        }
+    }
+
+    // 2. Validasi: Cek duplikasi No. Aset lokal
+    const filledAssetNumbers = cards.map(c => c.noAset.trim());
     const duplicates = filledAssetNumbers.filter((item, index) => filledAssetNumbers.indexOf(item) !== index);
 
     if (duplicates.length > 0) {
-        // Hilangkan duplikat nama untuk pesan notifikasi
         const uniqueDuplicates = [...new Set(duplicates)];
-        alert(`Peringatan: Terdapat Nomor Aset yang ganda/sama!\n\nNo. Aset ganda: ${uniqueDuplicates.join(', ')}\n\nSilakan perbaiki terlebih dahulu sebelum menyimpan.`);
-        return; // Hentikan proses simpan
+        alert(`Peringatan: Terdapat Nomor Aset yang ganda!\n\nNo. Aset ganda: ${uniqueDuplicates.join(', ')}`);
+        return;
     }
 
     const badge = document.getElementById('saveBadge');
     const statusText = document.getElementById('saveStatusText');
-    
+
     if (statusText) statusText.textContent = "Menyimpan ke DB...";
     if (badge) badge.className = "inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
 
-    // 2. Kirim data ke backend jika tidak ada duplikasi
+    // 3. Kirim ke Backend PHP
     fetch('api/save_labels.php', {
         method: 'POST',
         headers: {
@@ -369,25 +376,25 @@ function saveToDatabase() {
         },
         body: JSON.stringify(cards)
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('HTTP Error Status: ' + response.status);
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.status === 'success') {
-            alert(data.message);
-            if (statusText) statusText.textContent = "Tersimpan di DB";
-            if (badge) badge.className = "inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
-        } else {
-            alert('Gagal menyimpan: ' + data.message);
-            if (statusText) statusText.textContent = "Gagal Simpan";
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Terjadi kesalahan koneksi ke server: ' + error.message);
-        if (statusText) statusText.textContent = "Error Server";
-    });
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('HTTP Error Status: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                alert(data.message);
+                if (statusText) statusText.textContent = "Tersimpan di DB";
+                if (badge) badge.className = "inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
+            } else {
+                alert('Gagal menyimpan: ' + data.message);
+                if (statusText) statusText.textContent = "Gagal Simpan";
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan koneksi ke server: ' + error.message);
+            if (statusText) statusText.textContent = "Error Server";
+        });
 }
