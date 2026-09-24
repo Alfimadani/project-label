@@ -1,30 +1,22 @@
 <?php
 session_start();
 
-// Proteksi: Jika belum login, paksa pengguna kembali ke halaman login
-if (!isset($_SESSION['id_user'])) {
+// Proteksi: Hanya bisa diakses oleh Guest atau user terautentikasi
+if (!isset($_SESSION['id_user']) && !isset($_SESSION['is_guest'])) {
     header("Location: login.php");
     exit;
 }
 ?>
-
-
 <!DOCTYPE html>
 <html lang="id">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cetak Kartu Label Aset IT - Metallic Silver Theme</title>
-    <!-- Tailwind CSS CDN -->
+    <title>Cetak Kartu Label Aset IT - Mode Guest</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@500;700;900&display=swap"
-        rel="stylesheet">
-    <!-- Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- External CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -39,14 +31,12 @@ if (!isset($_SESSION['id_user'])) {
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="text-xl font-bold tracking-wide">Pembuat Stiker Label Aset IT</h1>
-                        <span id="saveBadge"
-                            class="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300">
-                            <i data-lucide="check-circle-2" class="w-3 h-3 text-emerald-400"></i>
-                            <span id="saveStatusText">Tersimpan Otomatis</span>
+                        <span class="inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                            <i data-lucide="user" class="w-3 h-3 text-amber-400"></i>
+                            <span>Mode Guest</span>
                         </span>
                     </div>
-                    <p class="text-xs text-slate-400">Tema: <strong class="text-slate-200">Silver Metallic</strong> |
-                        Ukuran Label: <strong>2.90" x 1.83"</strong> (2 Kolom)</p>
+                    <p class="text-xs text-slate-400">Tema: <strong class="text-slate-200">Silver Metallic</strong> | Ukuran Label: <strong>2.90" x 1.83"</strong> (2 Kolom)</p>
                 </div>
             </div>
 
@@ -56,11 +46,9 @@ if (!isset($_SESSION['id_user'])) {
                     <i data-lucide="plus-circle" class="w-4 h-4 text-slate-300"></i>
                     <span>Tambah Label</span>
                 </button>
-                <button onclick="saveToDatabase()"
-                    class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-medium transition text-sm shadow-md border border-emerald-500">
-                    <i data-lucide="database" class="w-4 h-4 text-emerald-100"></i>
-                    <span>Simpan ke DB Asset</span>
-                </button>
+
+                <!-- KETERANGAN: Tombol 'Simpan ke DB Asset' DITIADAKAN di Halaman Guest Ini -->
+
                 <button onclick="window.print()"
                     class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 text-white px-5 py-2 rounded-xl font-semibold shadow-lg shadow-slate-900/40 border border-slate-500 transition text-sm">
                     <i data-lucide="printer" class="w-4 h-4"></i>
@@ -70,7 +58,7 @@ if (!isset($_SESSION['id_user'])) {
                 <a href="logout.php" 
                     class="flex items-center gap-2 bg-rose-600/20 text-rose-300 border border-rose-500/30 hover:bg-rose-600 hover:text-white px-4 py-2 rounded-xl font-semibold transition text-sm">
                     <i data-lucide="log-out" class="w-4 h-4"></i>
-                    <span>Logout</span>
+                    <span>Keluar</span>
                 </a>
             </div>
         </div>
@@ -78,7 +66,6 @@ if (!isset($_SESSION['id_user'])) {
 
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <!-- Sidebar Controls -->
         <aside class="lg:col-span-3 no-print space-y-4">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
                 <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
@@ -86,18 +73,11 @@ if (!isset($_SESSION['id_user'])) {
                     <span>Informasi Label Silver</span>
                 </h2>
 
-                <div
-                    class="space-y-2.5 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-200 mb-4">
+                <div class="space-y-2.5 text-xs text-slate-600 bg-slate-50 p-3.5 rounded-xl border border-slate-200 mb-4">
                     <div class="flex justify-between items-center border-b border-slate-200 pb-1.5">
                         <span>Warna Tema:</span>
                         <strong class="text-slate-800 font-semibold flex items-center gap-1">
                             <span class="w-2.5 h-2.5 rounded-full bg-slate-500 inline-block"></span> Metallic Silver
-                        </strong>
-                    </div>
-                    <div class="flex justify-between items-center border-b border-slate-200 pb-1.5">
-                        <span>Penyimpanan:</span>
-                        <strong class="text-emerald-700 font-semibold flex items-center gap-1">
-                            <i data-lucide="database" class="w-3 h-3"></i> Auto-Save
                         </strong>
                     </div>
                     <div class="flex justify-between items-center border-b border-slate-200 pb-1.5">
@@ -116,7 +96,8 @@ if (!isset($_SESSION['id_user'])) {
                         <span>Isi Sample Data (4 Label)</span>
                         <i data-lucide="sparkles" class="w-4 h-4 text-slate-500"></i>
                     </button>
-                    <!-- Tambahkan di dalam <aside> tepat di bawah tombol Reset / Hapus Semua -->
+                    
+                    <!-- Tombol Lihat Semua Data DB Asset Tetap Ada -->
                     <div class="pt-2">
                         <a href="list_view.php"
                             class="w-full text-left px-3.5 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-xl text-xs transition flex items-center justify-between border border-indigo-200">
@@ -127,6 +108,7 @@ if (!isset($_SESSION['id_user'])) {
                             <i data-lucide="arrow-right" class="w-4 h-4 text-indigo-500"></i>
                         </a>
                     </div>
+
                     <button onclick="confirmClearAllCards()"
                         class="w-full text-left px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-medium rounded-xl text-xs transition flex items-center justify-between">
                         <span>Reset / Hapus Semua</span>
@@ -139,7 +121,6 @@ if (!isset($_SESSION['id_user'])) {
                 <div class="text-xs text-slate-500 space-y-1.5">
                     <p class="font-bold text-slate-700">Petunjuk Cetak:</p>
                     <p>• Garis putus-putus berada 12px di luar label agar mudah dipotong.</p>
-                    <p>• Semua data tersimpan otomatis di browser secara real-time.</p>
                 </div>
             </div>
         </aside>
@@ -173,8 +154,7 @@ if (!isset($_SESSION['id_user'])) {
                 <i data-lucide="alert-triangle" class="w-6 h-6"></i>
             </div>
             <h3 class="text-lg font-bold text-slate-800 mb-2">Reset Semua Label?</h3>
-            <p class="text-xs text-slate-600 mb-6">Tindakan ini akan menghapus semua label tersimpan dan mengembalikan
-                ke format kosong.</p>
+            <p class="text-xs text-slate-600 mb-6">Tindakan ini akan menghapus semua label tersimpan dan mengembalikan ke format kosong.</p>
             <div class="flex gap-3">
                 <button onclick="closeModal()"
                     class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition">
@@ -188,7 +168,6 @@ if (!isset($_SESSION['id_user'])) {
         </div>
     </div>
 
-    <!-- External JavaScript -->
     <script src="js/script.js"></script>
 </body>
 

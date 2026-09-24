@@ -1,25 +1,37 @@
 <?php
-// Tampilkan semua error PHP agar layar tidak blank putih
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 session_start();
 
-// Jika sudah login, lempar langsung ke index.php
+// Jika tombol Guest diklik, langsung arahkan ke index2.php
+if (isset($_POST['guest_login'])) {
+    $_SESSION['is_guest'] = true;
+    $_SESSION['nama_user'] = 'Guest';
+    header("Location: index2.php");
+    exit;
+}
+
+// Jika pengguna sudah login secara resmi, arahkan ke index.php
 if (isset($_SESSION['id_user'])) {
     header("Location: index.php");
     exit;
 }
 
+// Jika guest mencoba akses halaman login padahal sudah masuk sebagai guest
+if (isset($_SESSION['is_guest'])) {
+    header("Location: index2.php");
+    exit;
+}
+
 $error = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['guest_login'])) {
     $host = 'localhost';
     $user = 'root';
     $pass = ''; 
     $db   = 'db_label';
 
-    // Buat koneksi database dengan pengecekan error yang aman
     $conn = @new mysqli($host, $user, $pass, $db);
 
     if ($conn->connect_error) {
@@ -39,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['id_user'] = $userData['id_user'];
                     $_SESSION['username'] = $userData['username'];
                     $_SESSION['nama_user'] = $userData['nama_user'];
+                    unset($_SESSION['is_guest']);
 
                     header("Location: index.php");
                     exit;
@@ -82,19 +95,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <form action="login.php" method="POST" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">Username</label>
-                    <input type="text" name="username" required placeholder="Masukkan username..." 
+                    <input type="text" name="username" placeholder="Masukkan username..." 
                         class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1">Password</label>
-                    <input type="password" name="password" required placeholder="Masukkan password..." 
+                    <input type="password" name="password" placeholder="Masukkan password..." 
                         class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition">
                 </div>
 
                 <button type="submit" 
                     class="w-full mt-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition shadow-lg shadow-blue-600/20">
                     Masuk
+                </button>
+            </form>
+
+            <div class="relative my-4 flex items-center justify-center">
+                <div class="border-t border-slate-700 w-full"></div>
+                <span class="bg-slate-800 px-3 text-[11px] text-slate-500 font-medium uppercase absolute">atau</span>
+            </div>
+
+            <form action="login.php" method="POST">
+                <input type="hidden" name="guest_login" value="1">
+                <button type="submit" 
+                    class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold py-2 px-4 rounded-lg text-xs transition border border-slate-600">
+                    Masuk sebagai Guest
                 </button>
             </form>
         </div>

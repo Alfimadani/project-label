@@ -74,7 +74,7 @@ $endRecord   = min($offset + $limit, $totalData);
             </div>
 
             <div class="flex items-center gap-3">
-                <a href="index.html"
+                <a href="index.php"
                     class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-200 px-4 py-2 rounded-xl font-medium transition text-sm border border-slate-700">
                     <i data-lucide="printer" class="w-4 h-4 text-slate-300"></i>
                     <span>Kembali ke Cetak Label</span>
