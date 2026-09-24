@@ -5,21 +5,21 @@ let saveTimeout = null;
 const defaultSampleData = [
     {
         id: 1,
-        noAset: "IT-2024-0012",
-        namaAset: "Laptop ThinkPad E14",
-        spesifikasi: "Core i7 / 16GB / 512GB",
-        pengguna: "Budi Santoso",
-        deptLokasi: "IT & Systems - Lt. 2",
+        noAset: "50295-IT-BAST-KPS-09-2026",
+        namaAset: "PC DELL INSPIRON 3030 i5",
+        spesifikasi: "CPU 3CWCDF4 | MON G50KR94",
+        pengguna: "TASRIK S. ALI | S0925001907",
+        deptLokasi: "KPS-DISPATCH 运输部",
         waktuPenggunaan: "2024-01-15"
     },
     {
         id: 2,
-        noAset: "IT-2024-0088",
-        namaAset: "Monitor Dell 24 Inch",
-        spesifikasi: "Dell P2419H IPS FHD",
-        pengguna: "Siti Rahma",
-        deptLokasi: "Finance - Ruang 102",
-        waktuPenggunaan: "2024-02-01"
+        noAset: "50292-IT-BAST-KPS-09-2026",
+        namaAset: "PC DELL TOWER ECT1250",
+        spesifikasi: "CPU 3727XC4 | MON BFNCS94",
+        pengguna: "WINDA VERONIKA BENAWAN",
+        deptLokasi: "KPS-PRODUKSI - MO P8 R 213",
+        waktuPenggunaan: "2026-09-20"
     }
 ];
 
@@ -297,21 +297,21 @@ function fillSampleData() {
         ...defaultSampleData,
         {
             id: 3,
-            noAset: "IT-2024-0103",
-            namaAset: "Printer HP LaserJet",
-            spesifikasi: "M404dn Monokrom",
-            pengguna: "Shared / Admin",
-            deptLokasi: "HRD - Lobby Utama",
-            waktuPenggunaan: "2024-02-10"
+            noAset: "50298-IT-BAST-KPS-09-2026",
+            namaAset: "LAPTOP THINKPAD E14 GEN 4",
+            spesifikasi: "CORE i7 / 16GB / 512GB SSD",
+            pengguna: "BUDI SANTOSO | S0924001102",
+            deptLokasi: "IT & SYSTEMS - LT. 2",
+            waktuPenggunaan: "2026-09-22"
         },
         {
             id: 4,
-            noAset: "IT-2024-0155",
-            namaAset: "PC Desktop Tower",
-            spesifikasi: "i5-12400 / 16GB / 1TB",
-            pengguna: "Andi Wijaya",
-            deptLokasi: "Operation - Lt. 1",
-            waktuPenggunaan: "2024-03-01"
+            noAset: "50301-IT-BAST-KPS-09-2026",
+            namaAset: "PRINTER ZEBRA ZD230 THERMAL",
+            spesifikasi: "USB | DIRECT THERMAL / RIBBON",
+            pengguna: "LOGISTICS WAREHOUSE",
+            deptLokasi: "KPS-LOGISTIK 仓储部",
+            waktuPenggunaan: "2026-09-25"
         }
     ]));
     saveCardsToStorage();
