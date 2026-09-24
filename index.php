@@ -1,3 +1,12 @@
+<?php
+session_start();
+
+// Proteksi: Jika belum login, paksa pengguna kembali ke halaman login
+if (!isset($_SESSION['id_user'])) {
+    header("Location: login.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 
@@ -55,6 +64,12 @@
                     <i data-lucide="printer" class="w-4 h-4"></i>
                     <span>Cetak 2 Kolom</span>
                 </button>
+
+                <a href="logout.php" 
+                    class="flex items-center gap-2 bg-rose-600/20 text-rose-300 border border-rose-500/30 hover:bg-rose-600 hover:text-white px-4 py-2 rounded-xl font-semibold transition text-sm">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    <span>Logout</span>
+                </a>
             </div>
         </div>
     </header>
