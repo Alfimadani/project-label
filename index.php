@@ -26,6 +26,9 @@ if (!isset($_SESSION['id_user'])) {
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- External CSS -->
     <link rel="stylesheet" href="css/style.css">
+
+    <link rel="stylesheet" href="css/style.css?v=<?= time(); ?>">
+<script src="js/script.js?v=<?= time(); ?>"></script>
 </head>
 
 <body class="min-h-screen text-slate-800 flex flex-col">
