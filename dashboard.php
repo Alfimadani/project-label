@@ -57,19 +57,20 @@ $endRecord   = min($offset + $limit, $totalData);
 ?>
 <!DOCTYPE html>
 <html lang="id" class="light scroll-smooth">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nexus Enterprise - Asset Label Generator & DB</title>
-    
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+SC:wght@500;700;900&display=swap" rel="stylesheet">
-    
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -79,7 +80,7 @@ $endRecord   = min($offset + $limit, $totalData);
     <style>
         body {
             background-color: #F8FAFC;
-            background-image: 
+            background-image:
                 radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%),
                 radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.06) 0px, transparent 50%);
             background-attachment: fixed;
@@ -119,13 +120,13 @@ $endRecord   = min($offset + $limit, $totalData);
                 <div>
                     <span class="px-3 text-[10px] font-mono uppercase tracking-widest text-slate-400 font-bold">Menu Utama</span>
                     <nav class="mt-2 space-y-1">
-                        <a href="dashboard.php?tab=generator" 
-                           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition <?= $activeTab === 'generator' ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-md' : 'text-slate-600 hover:bg-indigo-50/60' ?>">
+                        <a href="dashboard.php?tab=generator"
+                            class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition <?= $activeTab === 'generator' ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-md' : 'text-slate-600 hover:bg-indigo-50/60' ?>">
                             <i data-lucide="scissors" class="w-4 h-4 <?= $activeTab === 'generator' ? 'text-white' : 'text-slate-400' ?>"></i>
                             <span>Cetak Stiker Label</span>
                         </a>
-                        <a href="dashboard.php?tab=database" 
-                           class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition <?= $activeTab === 'database' ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-md' : 'text-slate-600 hover:bg-indigo-50/60' ?>">
+                        <a href="dashboard.php?tab=database"
+                            class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition <?= $activeTab === 'database' ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-md' : 'text-slate-600 hover:bg-indigo-50/60' ?>">
                             <i data-lucide="database" class="w-4 h-4 <?= $activeTab === 'database' ? 'text-white' : 'text-slate-400' ?>"></i>
                             <span>DB Asset IT</span>
                         </a>
@@ -138,12 +139,16 @@ $endRecord   = min($offset + $limit, $totalData);
         <div class="mt-6 pt-4 border-t border-slate-200/80">
             <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-xs text-white">
-                        GS
+                    <div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center font-bold text-xs text-white uppercase">
+                        <?= isset($_SESSION['nama_user']) ? substr($_SESSION['nama_user'], 0, 2) : 'US'; ?>
                     </div>
                     <div>
-                        <p class="text-xs font-semibold text-slate-800">Mode Guest</p>
-                        <p class="text-[10px] text-slate-500 font-mono">User Terautentikasi</p>
+                        <p class="text-xs font-semibold text-slate-800">
+                            <?= htmlspecialchars($_SESSION['nama_user'] ?? 'Guest'); ?>
+                        </p>
+                        <p class="text-[10px] text-slate-500 font-mono">
+                            <?= isset($_SESSION['is_guest']) ? 'Akses Guest' : 'User Terautentikasi'; ?>
+                        </p>
                     </div>
                 </div>
                 <a href="label/logout.php" title="Logout" class="text-slate-400 hover:text-rose-600 p-1.5 transition">
@@ -155,7 +160,7 @@ $endRecord   = min($offset + $limit, $totalData);
 
     <!-- MAIN CONTENT -->
     <main class="flex-1 flex flex-col min-w-0 min-h-screen">
-        
+
         <!-- HEADER TOPBAR -->
         <header class="sticky top-0 z-30 glass-card border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between no-print">
             <div class="flex items-center gap-2">
@@ -306,7 +311,8 @@ $endRecord   = min($offset + $limit, $totalData);
                             </thead>
                             <tbody class="divide-y divide-slate-200 text-slate-700">
                                 <?php if ($result && $result->num_rows > 0): ?>
-                                    <?php $no = $offset + 1; while ($row = $result->fetch_assoc()): ?>
+                                    <?php $no = $offset + 1;
+                                    while ($row = $result->fetch_assoc()): ?>
                                         <tr class="hover:bg-slate-50/80 transition">
                                             <td class="p-3.5 text-center font-medium text-slate-500"><?= $no++; ?></td>
                                             <td class="p-3.5 font-bold text-indigo-600 whitespace-nowrap">
@@ -418,9 +424,10 @@ $endRecord   = min($offset + $limit, $totalData);
         }
     </script>
 </body>
+
 </html>
-<?php 
+<?php
 if ($db_connected) {
-    $conn->close(); 
+    $conn->close();
 }
 ?>
