@@ -103,7 +103,7 @@ $endRecord   = min($offset + $limit, $totalData);
 <body class="font-sans antialiased text-slate-700 min-h-screen flex flex-col md:flex-row overflow-x-hidden">
 
     <!-- SIDEBAR NAVIGATION -->
-    <aside id="sidebar" class="w-full md:w-64 glass-card border-r border-slate-200/80 flex flex-col justify-between p-4 z-40 md:sticky md:top-0 md:h-screen shrink-0 no-print">
+    <aside id="sidebar" class="fixed md:sticky top-0 left-0 h-screen w-64 glass-card border-r border-slate-200/80 flex flex-col justify-between p-4 z-40 shrink-0 transition-all duration-300 ease-in-out no-print">
         <div>
             <!-- Brand Logo -->
             <div class="flex items-center justify-between px-2 py-3 mb-6">
@@ -165,8 +165,13 @@ $endRecord   = min($offset + $limit, $totalData);
     <main class="flex-1 flex flex-col min-w-0 min-h-screen">
 
         <!-- HEADER TOPBAR -->
+        <!-- HEADER TOPBAR -->
         <header class="sticky top-0 z-30 glass-card border-b border-slate-200/80 px-6 py-3.5 flex items-center justify-between no-print">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
+                <!-- TOMBOL TOGGLE SIDEBAR -->
+                <button id="toggleSidebar" onclick="toggleSidebarMenu()" class="p-1.5 rounded-xl text-slate-600 hover:bg-slate-100 transition focus:outline-none">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
                 <span class="text-sm font-bold text-slate-800">
                     <?= $activeTab === 'generator' ? 'Pembuat Stiker Label Aset IT' : 'Database Rekap Aset IT' ?>
                 </span>
@@ -417,6 +422,21 @@ $endRecord   = min($offset + $limit, $totalData);
                 lucide.createIcons();
             }
         });
+
+        // FUNGSI UNTUK HIDE / SHOW SIDEBAR
+        function toggleSidebarMenu() {
+            const sidebar = document.getElementById('sidebar');
+
+            if (sidebar.classList.contains('-translate-x-full')) {
+                // Munculkan Sidebar
+                sidebar.classList.remove('-translate-x-full', 'w-0', 'p-0', 'overflow-hidden');
+                sidebar.classList.add('w-64', 'p-4');
+            } else {
+                // Sembunyikan Sidebar
+                sidebar.classList.remove('w-64', 'p-4');
+                sidebar.classList.add('-translate-x-full', 'w-0', 'p-0', 'overflow-hidden');
+            }
+        }
 
         function changeLimit(value) {
             const urlParams = new URLSearchParams(window.location.search);
