@@ -1,4 +1,5 @@
 <?php
+session_start();
 header('Content-Type: application/json');
 
 // Konfigurasi Database
@@ -17,6 +18,17 @@ if ($conn->connect_error) {
 // Ambil data JSON dari JavaScript
 $input = file_get_contents('php://input');
 $data = json_decode($input, true);
+
+// Cek apakah user login sebagai Guest atau belum login sama sekali
+if (isset($_SESSION['is_guest']) || !isset($_SESSION['id_user'])) {
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'Anda bukan admin! Akses simpan ke database ditolak.'
+    ]);
+    exit;
+}
+
+// ... Kode koneksi database dan query INSERT/UPDATE kamu di bawahnya ...
 
 if (!empty($data) && is_array($data)) {
     

@@ -3,102 +3,104 @@ let saveTimeout = null;
 
 // Data Default Awal (2 Data Sampel Presisi Sesuai Gambar)
 const defaultSampleData = [
-    {
-        id: 1,
-        noAset: "50295-IT-BAST-KPS-09-2026",
-        namaAset: "PC DELL INSPIRON 3030 i5",
-        spesifikasi: "CPU 3CWCDF4 | MON G50KR94",
-        pengguna: "TASRIK S. ALI | S0925001907",
-        deptLokasi: "KPS-DISPATCH 运输部",
-        waktuPenggunaan: "2026-09-21"
-    },
-    {
-        id: 2,
-        noAset: "50292-IT-BAST-KPS-09-2026",
-        namaAset: "PC DELL TOWER ECT1250",
-        spesifikasi: "CPU 3727XC4 | MON BFNCS94",
-        pengguna: "WINDA VERONIKA BENAWAN",
-        deptLokasi: "KPS-PRODUKSI - MO P8 R 213",
-        waktuPenggunaan: "2026-09-20"
-    }
+  {
+    id: 1,
+    noAset: "50295-IT-BAST-KPS-09-2026",
+    namaAset: "PC DELL INSPIRON 3030 i5",
+    spesifikasi: "CPU 3CWCDF4 | MON G50KR94",
+    pengguna: "TASRIK S. ALI | S0925001907",
+    deptLokasi: "KPS-DISPATCH 运输部",
+    waktuPenggunaan: "2026-09-21",
+  },
+  {
+    id: 2,
+    noAset: "50292-IT-BAST-KPS-09-2026",
+    namaAset: "PC DELL TOWER ECT1250",
+    spesifikasi: "CPU 3727XC4 | MON BFNCS94",
+    pengguna: "WINDA VERONIKA BENAWAN",
+    deptLokasi: "KPS-PRODUKSI - MO P8 R 213",
+    waktuPenggunaan: "2026-09-20",
+  },
 ];
 
 let cards = [];
 
 // Helper Konversi Tanggal ke YYYY-MM-DD
 function formatToYYYYMMDD(dateStr) {
-    if (!dateStr) return getFormattedToday();
-    
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-        return dateStr;
-    }
-    
-    if (dateStr.includes('/')) {
-        const parts = dateStr.split('/');
-        if (parts.length === 3) {
-            return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-        }
-    }
-    
+  if (!dateStr) return getFormattedToday();
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
     return dateStr;
+  }
+
+  if (dateStr.includes("/")) {
+    const parts = dateStr.split("/");
+    if (parts.length === 3) {
+      return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+    }
+  }
+
+  return dateStr;
 }
 
 // Muat data dari LocalStorage
 function loadSavedCards() {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                cards = parsed.map(card => ({
-                    ...card,
-                    waktuPenggunaan: formatToYYYYMMDD(card.waktuPenggunaan)
-                }));
-                return;
-            }
-        }
-    } catch (e) {
-        console.error("Gagal memuat data dari LocalStorage:", e);
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        cards = parsed.map((card) => ({
+          ...card,
+          waktuPenggunaan: formatToYYYYMMDD(card.waktuPenggunaan),
+        }));
+        return;
+      }
     }
-    cards = JSON.parse(JSON.stringify(defaultSampleData));
+  } catch (e) {
+    console.error("Gagal memuat data dari LocalStorage:", e);
+  }
+  cards = JSON.parse(JSON.stringify(defaultSampleData));
 }
 
 // Simpan data ke LocalStorage
 function saveCardsToStorage() {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
-        showSaveNotification();
-    } catch (e) {
-        console.error("Gagal menyimpan data ke LocalStorage:", e);
-    }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+    showSaveNotification();
+  } catch (e) {
+    console.error("Gagal menyimpan data ke LocalStorage:", e);
+  }
 }
 
 // Indikator Auto-Save
 function showSaveNotification() {
-    const badge = document.getElementById('saveBadge');
-    const statusText = document.getElementById('saveStatusText');
-    if (!badge || !statusText) return;
+  const badge = document.getElementById("saveBadge");
+  const statusText = document.getElementById("saveStatusText");
+  if (!badge || !statusText) return;
 
-    statusText.textContent = "Menyimpan...";
-    badge.className = "inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
+  statusText.textContent = "Menyimpan...";
+  badge.className =
+    "inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
 
-    clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(() => {
-        statusText.textContent = "Tersimpan Otomatis";
-        badge.className = "inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
-    }, 500);
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    statusText.textContent = "Tersimpan Otomatis";
+    badge.className =
+      "inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
+  }, 500);
 }
 
 // Render Kartu ke Layar
 function renderCards() {
-    const container = document.getElementById('cardsContainer');
-    if (!container) return;
-    container.innerHTML = '';
+  const container = document.getElementById("cardsContainer");
+  if (!container) return;
+  container.innerHTML = "";
 
-    cards.forEach((card) => {
-        const cutBox = document.createElement('div');
-        cutBox.className = 'cut-box group';
-        cutBox.innerHTML = `
+  cards.forEach((card) => {
+    const cutBox = document.createElement("div");
+    cutBox.className = "cut-box group";
+    cutBox.innerHTML = `
             <div class="cut-indicator">
                 <svg class="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <circle cx="6" cy="6" r="3"></circle>
@@ -231,223 +233,245 @@ function renderCards() {
                 </div>
             </div>
         `;
-        container.appendChild(cutBox);
-    });
+    container.appendChild(cutBox);
+  });
 
-    const countElem = document.getElementById('cardCount');
-    if (countElem) {
-        countElem.textContent = `${cards.length} Label`;
-    }
+  const countElem = document.getElementById("cardCount");
+  if (countElem) {
+    countElem.textContent = `${cards.length} Label`;
+  }
 
-    if (window.lucide) {
-        lucide.createIcons();
-    }
+  if (window.lucide) {
+    lucide.createIcons();
+  }
 }
 
 // Update nilai input
 function updateCardData(id, field, value) {
-    const card = cards.find(c => c.id === id);
-    if (card) {
-        card[field] = value;
-        saveCardsToStorage();
-    }
+  const card = cards.find((c) => c.id === id);
+  if (card) {
+    card[field] = value;
+    saveCardsToStorage();
+  }
 }
 
 // Tambah kartu baru
 function addNewCard() {
-    const newId = cards.length > 0 ? Math.max(...cards.map(c => c.id)) + 1 : 1;
-    cards.push({
-        id: newId,
-        noAset: "",
-        namaAset: "",
-        spesifikasi: "",
-        pengguna: "",
-        deptLokasi: "",
-        waktuPenggunaan: getFormattedToday()
-    });
-    saveCardsToStorage();
-    renderCards();
+  const newId = cards.length > 0 ? Math.max(...cards.map((c) => c.id)) + 1 : 1;
+  cards.push({
+    id: newId,
+    noAset: "",
+    namaAset: "",
+    spesifikasi: "",
+    pengguna: "",
+    deptLokasi: "",
+    waktuPenggunaan: getFormattedToday(),
+  });
+  saveCardsToStorage();
+  renderCards();
 }
 
 // Hapus kartu
 function deleteCard(id) {
-    cards = cards.filter(c => c.id !== id);
-    if (cards.length === 0) {
-        cards.push({
-            id: 1,
-            noAset: "",
-            namaAset: "",
-            spesifikasi: "",
-            pengguna: "",
-            deptLokasi: "",
-            waktuPenggunaan: ""
-        });
-    }
-    saveCardsToStorage();
-    renderCards();
+  cards = cards.filter((c) => c.id !== id);
+  if (cards.length === 0) {
+    cards.push({
+      id: 1,
+      noAset: "",
+      namaAset: "",
+      spesifikasi: "",
+      pengguna: "",
+      deptLokasi: "",
+      waktuPenggunaan: "",
+    });
+  }
+  saveCardsToStorage();
+  renderCards();
 }
 
 // ISI SAMPEL DATA (Otomatis Bersihkan Cache & Langsung Muat 4 Data)
 function fillSampleData() {
-    localStorage.removeItem(STORAGE_KEY); // Paksa hapus cache lama
+  localStorage.removeItem(STORAGE_KEY); // Paksa hapus cache lama
 
-    cards = [
-        {
-            id: 1,
-            noAset: "50295-IT-BAST-KPS-09-2026",
-            namaAset: "PC DELL INSPIRON 3030 i5",
-            spesifikasi: "CPU 3CWCDF4 | MON G50KR94",
-            pengguna: "TASRIK S. ALI | S0925001907",
-            deptLokasi: "KPS-DISPATCH 运输部",
-            waktuPenggunaan: "2026-09-21"
-        },
-        {
-            id: 2,
-            noAset: "50292-IT-BAST-KPS-09-2026",
-            namaAset: "PC DELL TOWER ECT1250",
-            spesifikasi: "CPU 3727XC4 | MON BFNCS94",
-            pengguna: "WINDA VERONIKA BENAWAN",
-            deptLokasi: "KPS-PRODUKSI - MO P8 R 213",
-            waktuPenggunaan: "2026-09-20"
-        },
-        {
-            id: 3,
-            noAset: "50298-IT-BAST-KPS-09-2026",
-            namaAset: "LAPTOP THINKPAD E14 GEN 4",
-            spesifikasi: "CORE i7 / 16GB / 512GB SSD",
-            pengguna: "BUDI SANTOSO | S0924001102",
-            deptLokasi: "IT & SYSTEMS - LT. 2",
-            waktuPenggunaan: "2026-09-22"
-        },
-        {
-            id: 4,
-            noAset: "50301-IT-BAST-KPS-09-2026",
-            namaAset: "PRINTER ZEBRA ZD230 THERMAL",
-            spesifikasi: "USB | DIRECT THERMAL / RIBBON",
-            pengguna: "LOGISTICS WAREHOUSE",
-            deptLokasi: "KPS-LOGISTIK 仓储部",
-            waktuPenggunaan: "2026-09-25"
-        }
-    ];
+  cards = [
+    {
+      id: 1,
+      noAset: "50295-IT-BAST-KPS-09-2026",
+      namaAset: "PC DELL INSPIRON 3030 i5",
+      spesifikasi: "CPU 3CWCDF4 | MON G50KR94",
+      pengguna: "TASRIK S. ALI | S0925001907",
+      deptLokasi: "KPS-DISPATCH 运输部",
+      waktuPenggunaan: "2026-09-21",
+    },
+    {
+      id: 2,
+      noAset: "50292-IT-BAST-KPS-09-2026",
+      namaAset: "PC DELL TOWER ECT1250",
+      spesifikasi: "CPU 3727XC4 | MON BFNCS94",
+      pengguna: "WINDA VERONIKA BENAWAN",
+      deptLokasi: "KPS-PRODUKSI - MO P8 R 213",
+      waktuPenggunaan: "2026-09-20",
+    },
+    {
+      id: 3,
+      noAset: "50298-IT-BAST-KPS-09-2026",
+      namaAset: "LAPTOP THINKPAD E14 GEN 4",
+      spesifikasi: "CORE i7 / 16GB / 512GB SSD",
+      pengguna: "BUDI SANTOSO | S0924001102",
+      deptLokasi: "IT & SYSTEMS - LT. 2",
+      waktuPenggunaan: "2026-09-22",
+    },
+    {
+      id: 4,
+      noAset: "50301-IT-BAST-KPS-09-2026",
+      namaAset: "PRINTER ZEBRA ZD230 THERMAL",
+      spesifikasi: "USB | DIRECT THERMAL / RIBBON",
+      pengguna: "LOGISTICS WAREHOUSE",
+      deptLokasi: "KPS-LOGISTIK 仓储部",
+      waktuPenggunaan: "2026-09-25",
+    },
+  ];
 
-    saveCardsToStorage();
-    renderCards();
+  saveCardsToStorage();
+  renderCards();
 }
 
 // Kontrol Modal
 function confirmClearAllCards() {
-    const modal = document.getElementById('clearModal');
-    if (modal) modal.classList.remove('hidden');
+  const modal = document.getElementById("clearModal");
+  if (modal) modal.classList.remove("hidden");
 }
 
 function closeModal() {
-    const modal = document.getElementById('clearModal');
-    if (modal) modal.classList.add('hidden');
+  const modal = document.getElementById("clearModal");
+  if (modal) modal.classList.add("hidden");
 }
 
 // RESET / HAPUS SEMUA DATA (Sapu Bersih Cache LocalStorage)
 function executeClearAllCards() {
-    localStorage.removeItem(STORAGE_KEY); // Hapus total memori dari browser
+  localStorage.removeItem(STORAGE_KEY); // Hapus total memori dari browser
 
-    cards = [{
-        id: 1,
-        noAset: "",
-        namaAset: "",
-        spesifikasi: "",
-        pengguna: "",
-        deptLokasi: "",
-        waktuPenggunaan: getFormattedToday()
-    }];
+  cards = [
+    {
+      id: 1,
+      noAset: "",
+      namaAset: "",
+      spesifikasi: "",
+      pengguna: "",
+      deptLokasi: "",
+      waktuPenggunaan: getFormattedToday(),
+    },
+  ];
 
-    saveCardsToStorage();
-    renderCards();
-    closeModal();
+  saveCardsToStorage();
+  renderCards();
+  closeModal();
 }
 
 // Utility Escape HTML
 function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+  if (!str) return "";
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 // Inisialisasi saat halaman dimuat
 window.onload = function () {
-    loadSavedCards();
-    renderCards();
+  loadSavedCards();
+  renderCards();
 };
 
 function saveToDatabase() {
-    if (!cards || cards.length === 0) {
-        alert("Tidak ada data label untuk disimpan!");
-        return;
+  if (!cards || cards.length === 0) {
+    alert("Tidak ada data label untuk disimpan!");
+    return;
+  }
+
+  for (let i = 0; i < cards.length; i++) {
+    const c = cards[i];
+    if (
+      !c.noAset?.trim() ||
+      !c.namaAset?.trim() ||
+      !c.spesifikasi?.trim() ||
+      !c.pengguna?.trim() ||
+      !c.deptLokasi?.trim() ||
+      !c.waktuPenggunaan?.trim()
+    ) {
+      alert(
+        `Gagal Menyimpan!\n\nSemua kolom input pada Label Ke-${i + 1} wajib diisi lengkap.`,
+      );
+      return;
     }
+  }
 
-    for (let i = 0; i < cards.length; i++) {
-        const c = cards[i];
-        if (!c.noAset?.trim() || !c.namaAset?.trim() || !c.spesifikasi?.trim() ||
-            !c.pengguna?.trim() || !c.deptLokasi?.trim() || !c.waktuPenggunaan?.trim()) {
+  const filledAssetNumbers = cards.map((c) => c.noAset.trim());
+  const duplicates = filledAssetNumbers.filter(
+    (item, index) => filledAssetNumbers.indexOf(item) !== index,
+  );
 
-            alert(`Gagal Menyimpan!\n\nSemua kolom input pada Label Ke-${i + 1} wajib diisi lengkap.`);
-            return;
+  if (duplicates.length > 0) {
+    const uniqueDuplicates = [...new Set(duplicates)];
+    alert(
+      `Peringatan: Terdapat Nomor Aset yang ganda!\n\nNo. Aset ganda: ${uniqueDuplicates.join(", ")}`,
+    );
+    return;
+  }
+
+  const badge = document.getElementById("saveBadge");
+  const statusText = document.getElementById("saveStatusText");
+
+  if (statusText) statusText.textContent = "Menyimpan ke DB...";
+  if (badge)
+    badge.className =
+      "inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
+
+  fetch("label/api/save_labels.php", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(cards),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === "success") {
+        if (statusText) statusText.textContent = "Tersimpan di DB";
+        if (badge)
+          badge.className =
+            "inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
+        if (
+          confirm(
+            data.message +
+              "\n\nApakah Anda ingin membuka halaman List View sekarang?",
+          )
+        ) {
+          window.location.href = "dashboard.php?tab=database";
         }
-    }
-
-    const filledAssetNumbers = cards.map(c => c.noAset.trim());
-    const duplicates = filledAssetNumbers.filter((item, index) => filledAssetNumbers.indexOf(item) !== index);
-
-    if (duplicates.length > 0) {
-        const uniqueDuplicates = [...new Set(duplicates)];
-        alert(`Peringatan: Terdapat Nomor Aset yang ganda!\n\nNo. Aset ganda: ${uniqueDuplicates.join(', ')}`);
-        return;
-    }
-
-    const badge = document.getElementById('saveBadge');
-    const statusText = document.getElementById('saveStatusText');
-
-    if (statusText) statusText.textContent = "Menyimpan ke DB...";
-    if (badge) badge.className = "inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
-
-    fetch('label/api/save_labels.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(cards)
+      } else {
+        // Tampilkan pesan "Anda bukan admin!" jika login sebagai Guest
+        alert(data.message);
+        if (statusText) statusText.textContent = "Gagal Simpan";
+        if (badge)
+          badge.className =
+            "inline-flex items-center gap-1 bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
+      }
     })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('HTTP Error Status: ' + response.status);
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.status === 'success') {
-                if (statusText) statusText.textContent = "Tersimpan di DB";
-                if (badge) badge.className = "inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
-                if (confirm(data.message + "\n\nApakah Anda ingin membuka halaman List View sekarang?")) {
-                    window.location.href = 'dashboard.php?tab=database';
-                }
-            } else {
-                alert('Gagal menyimpan: ' + data.message);
-                if (statusText) statusText.textContent = "Gagal Simpan";
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Terjadi kesalahan koneksi ke server: ' + error.message);
-            if (statusText) statusText.textContent = "Error Server";
-        });
+    .catch((error) => {
+      console.error("Error:", error);
+      alert("Terjadi kesalahan koneksi ke server: " + error.message);
+      if (statusText) statusText.textContent = "Error Server";
+    });
 }
 
 // Tanggal hari ini YYYY-MM-DD
 function getFormattedToday() {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
