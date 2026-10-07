@@ -2,10 +2,13 @@
 session_start();
 
 // 1. Proteksi Sesi Login
+// 1. Proteksi Sesi Login (Mendukung Login User & Guest)
 if (!isset($_SESSION['id_user']) && !isset($_SESSION['is_guest'])) {
     header("Location: label/login.php");
     exit;
 }
+
+
 
 // 2. Koneksi Database untuk Tab Database (List View)
 $host = 'localhost';
