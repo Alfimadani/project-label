@@ -411,7 +411,7 @@ function saveToDatabase() {
     if (statusText) statusText.textContent = "Menyimpan ke DB...";
     if (badge) badge.className = "inline-flex items-center gap-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-semibold px-2 py-0.5 rounded-full transition-all duration-300";
 
-    fetch('api/save_labels.php', {
+    fetch('label/api/save_labels.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
