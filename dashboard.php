@@ -19,8 +19,9 @@ $db   = 'db_label';
 $conn = new mysqli($host, $user, $pass, $db);
 $db_connected = !$conn->connect_error;
 
-// 3. Menentukan Tab Aktif dari Parameter Query String (?tab=generator atau ?tab=database)
-$activeTab = isset($_GET['tab']) && $_GET['tab'] === 'database' ? 'database' : 'generator';
+
+// 3. Menentukan Tab Aktif dari Parameter Query String
+$activeTab = isset($_GET['tab']) ? $_GET['tab'] : 'generator';
 
 // 4. Logika Paginasi & Search untuk Tab Database
 $limit_options = [10, 25, 50, 100, 250, 500];
@@ -119,7 +120,9 @@ $endRecord   = min($offset + $limit, $totalData);
             </div>
 
             <!-- Navigation Items -->
+            <!-- Navigation Items -->
             <div class="space-y-6">
+                <!-- MENU UTAMA 1 -->
                 <div>
                     <span class="px-3 text-[10px] font-mono uppercase tracking-widest text-slate-400 font-bold">Menu Utama</span>
                     <nav class="mt-2 space-y-1">
@@ -135,6 +138,19 @@ $endRecord   = min($offset + $limit, $totalData);
                         </a>
                     </nav>
                 </div>
+
+                <!-- MENU UTAMA 2 -->
+                <div>
+                    <span class="px-3 text-[10px] font-mono uppercase tracking-widest text-slate-400 font-bold">Menu Utama 2</span>
+                    <nav class="mt-2 space-y-1">
+                        <a href="dashboard.php?tab=drone"
+                            class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition <?= $activeTab === 'drone' ? 'bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-md' : 'text-slate-600 hover:bg-indigo-50/60' ?>">
+                            <i data-lucide="plane" class="w-4 h-4 <?= $activeTab === 'drone' ? 'text-white' : 'text-slate-400' ?>"></i>
+                            <span>Sistem Drone</span>
+                        </a>
+                    </nav>
+                </div>
+
             </div>
         </div>
 
@@ -173,7 +189,17 @@ $endRecord   = min($offset + $limit, $totalData);
                     <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
                 <span class="text-sm font-bold text-slate-800">
-                    <?= $activeTab === 'generator' ? 'Pembuat Stiker Label Aset IT' : 'Database Rekap Aset IT' ?>
+                    <?php
+                    if ($activeTab === 'generator') {
+                        echo 'Pembuat Stiker Label Aset IT';
+                    } elseif ($activeTab === 'database') {
+                        echo 'Database Rekap Aset IT';
+                    } elseif ($activeTab === 'drone') {
+                        echo 'Sistem Pemetaan & Manajemen Drone';
+                    } else {
+                        echo 'Dashboard';
+                    }
+                    ?>
                 </span>
                 <?php if ($activeTab === 'generator'): ?>
                     <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 border text-slate-600">2.90" x 1.83"</span>
@@ -396,6 +422,32 @@ $endRecord   = min($offset + $limit, $totalData);
                     </div>
                 </div>
 
+            </div>
+        <?php endif; ?>
+
+        <!-- KONTEN TAB 3: SISTEM DRONE -->
+        <?php if ($activeTab === 'drone'): ?>
+            <div class="p-6 max-w-7xl w-full mx-auto space-y-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                            <i data-lucide="plane" class="w-6 h-6"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-bold text-slate-800">Manajemen & Pemetaan Drone</h2>
+                            <p class="text-xs text-slate-500">Kawasan operasional, log penerbangan, overlay KMZ, dan analisis citra aerial.</p>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-6">
+                        <!-- Tempat kamu mengisi modul/UI drone nantinya -->
+                        <div class="p-8 border-2 border-dashed border-slate-200 rounded-xl text-center text-slate-400">
+                            <i data-lucide="compass" class="w-10 h-10 mx-auto mb-2 text-slate-300"></i>
+                            <p class="text-xs font-semibold text-slate-600">Area Modul Drone</p>
+                            <p class="text-[11px] text-slate-400">Silakan masukkan script / view drone kamu di bagian ini.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         <?php endif; ?>
 
