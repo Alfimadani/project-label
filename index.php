@@ -8,5 +8,5 @@ if (isset($_SESSION['id_user']) || isset($_SESSION['is_guest'])) {
 }
 
 // Jika belum login sama sekali, arahkan ke halaman login
-header("Location: label/login.php");
+header("Location: label/index.php");
 exit;

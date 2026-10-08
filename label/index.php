@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['guest_login'])) {
                 </div>
             <?php endif; ?>
 
-            <form action="login.php" method="POST" class="space-y-4">
+            <form action="index.php" method="POST" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 mb-1.5">Username</label>
                     <input type="text" name="username" required placeholder="Masukkan username..."
@@ -134,7 +134,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['guest_login'])) {
                 <span class="bg-slate-800 px-3 text-[10px] text-slate-500 font-semibold uppercase absolute">Atau</span>
             </div>
 
-            <form action="login.php" method="POST">
+            <form action="index.php" method="POST">
                 <input type="hidden" name="guest_login" value="1">
                 <button type="submit"
                     class="w-full bg-slate-700/60 hover:bg-slate-700 text-slate-300 font-medium py-2 px-4 rounded-xl text-xs transition border border-slate-600/80">
