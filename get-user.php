@@ -1,6 +1,7 @@
 <?php
-error_reporting(0);
-ini_set('display_errors', 0);
+// Aktifkan reporting sementara untuk debugging jika terjadi error
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -13,70 +14,85 @@ if (empty($username)) {
 
 $sanitizedUser = preg_replace('/[^a-zA-Z0-9_\-\.\s]/', '', $username);
 
-$psScript = <<<POWERSHELL
-\$ProgressPreference = 'SilentlyContinue';
-\$ErrorActionPreference = 'Stop';
+// Konfigurasi AD LDAP
+$ldapServer = 'obi.com';
+$ldapPort   = 389;
 
-try {
-    Import-Module ActiveDirectory;
-    \$user = Get-ADUser -Identity "$sanitizedUser" -Properties *;
+$domainUser = 'OBI\Helpdesktop';
+$domainPass = 'OBit#%78@';
+$baseDn     = 'DC=obi,DC=com';
 
-    if (\$user) {
-        \$userObj = [PSCustomObject]@{
-            SamAccountName    = \$user.SamAccountName
-            DisplayName       = \$user.DisplayName
-            Title             = \$user.Title
-            Department        = \$user.Department
-            EmailAddress      = \$user.EmailAddress
-            Enabled           = \$user.Enabled
-            DistinguishedName = \$user.DistinguishedName
-            UserPrincipalName = \$user.UserPrincipalName
-            SID               = if (\$user.SID) { \$user.SID.Value } else { "-" }
-            PasswordLastSet   = if (\$user.PasswordLastSet) { \$user.PasswordLastSet.ToString("yyyy-MM-dd HH:mm:ss") } else { "-" }
-            WhenCreated       = if (\$user.whenCreated) { \$user.whenCreated.ToString("yyyy-MM-dd HH:mm:ss") } else { "-" }
-            LastLogonDate     = if (\$user.LastLogonDate) { \$user.LastLogonDate.ToString("yyyy-MM-dd HH:mm:ss") } else { "-" }
-            EmployeeID        = \$user.EmployeeID
-            Manager           = \$user.Manager
-            MemberOf          = \$user.MemberOf
-            DirectReports     = \$user.DirectReports
-        }
-        \$userObj | ConvertTo-Json -Compress -Depth 4
-    } else {
-        Write-Output "USER_NOT_FOUND"
-    }
-} catch {
-    \$cleanErr = \$_ .Exception.Message -replace '[\r\n"]', ' '
-    Write-Output "PS_ERROR: " + \$cleanErr
-}
-POWERSHELL;
+$ldapConn = ldap_connect($ldapServer, $ldapPort);
 
-$encodedCommand = base64_encode(mb_convert_encoding($psScript, 'UTF-16LE', 'UTF-8'));
-$pwshPath = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe';
-
-$command = "\"$pwshPath\" -NoProfile -ExecutionPolicy Bypass -EncodedCommand $encodedCommand 2>&1";
-$output = trim(shell_exec($command));
-
-if (empty($output)) {
-    echo json_encode(['error' => 'Tidak ada respon dari PowerShell server.'], JSON_UNESCAPED_UNICODE);
+if (!$ldapConn) {
+    echo json_encode(['error' => 'Gagal terhubung ke server Domain Controller LDAP.'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-// Menangkap error dari PowerShell
-if (strpos($output, 'PS_ERROR:') !== false) {
-    $errMessage = trim(str_replace('PS_ERROR:', '', $output));
-    echo json_encode(['error' => "Akses Ditolak / Error AD: $errMessage"], JSON_UNESCAPED_UNICODE);
+ldap_set_option($ldapConn, LDAP_OPT_PROTOCOL_VERSION, 3);
+ldap_set_option($ldapConn, LDAP_OPT_REFERRALS, 0);
+
+// Binding Otentikasi
+$bind = @ldap_bind($ldapConn, $domainUser, $domainPass);
+
+if (!$bind) {
+    $ldapErr = ldap_error($ldapConn);
+    echo json_encode(['error' => "Gagal Authenticated Bind: $ldapErr. Cek kembali username/password service account."], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-if ($output === 'USER_NOT_FOUND') {
+// Query User Active Directory
+$filter = "(sAMAccountName=$sanitizedUser)";
+$search = @ldap_search($ldapConn, $baseDn, $filter);
+
+if (!$search) {
+    echo json_encode(['error' => 'Gagal melakukan ldap_search pada Base DN.'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+$entries = ldap_get_entries($ldapConn, $search);
+
+if (!$entries || $entries['count'] === 0) {
     echo json_encode(['error' => "User '$sanitizedUser' tidak ditemukan di Active Directory."], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-$decoded = json_decode($output);
-if (json_last_error() !== JSON_ERROR_NONE) {
-    echo json_encode(['error' => "Gagal memproses data dari AD. Output: $output"], JSON_UNESCAPED_UNICODE);
-    exit;
+// Fungsi pembantu untuk konversi Safe UTF-8 / String Handling
+function cleanLdapValue($value)
+{
+    if (is_array($value)) {
+        unset($value['count']);
+        return array_map('cleanLdapValue', array_values($value));
+    }
+    // Konversi encoding ke UTF-8 jika bukan string murni UTF-8
+    if (!mb_check_encoding($value, 'UTF-8')) {
+        return utf8_encode($value);
+    }
+    return $value;
 }
 
-echo $output;
+$userData = [];
+$user = $entries[0];
+
+foreach ($user as $key => $val) {
+    if (is_numeric($key)) continue;
+
+    if (isset($val['count'])) {
+        if ($val['count'] == 1) {
+            $userData[$key] = cleanLdapValue($val[0]);
+        } else {
+            $userData[$key] = cleanLdapValue($val);
+        }
+    }
+}
+
+ldap_close($ldapConn);
+
+// Output JSON dengan proteksi error encoding
+$jsonOutput = json_encode($userData, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+
+if ($jsonOutput === false) {
+    echo json_encode(['error' => 'JSON Encode Error: ' . json_last_error_msg()], JSON_UNESCAPED_UNICODE);
+} else {
+    echo $jsonOutput;
+}
