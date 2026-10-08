@@ -69,7 +69,7 @@
           class="hidden md:flex items-center space-x-3 text-xs bg-slate-900 border border-slate-800 rounded-full px-3 py-1.5">
           <span class="flex items-center text-slate-300">
             <i class="fa-solid fa-server text-brand-500 mr-2"></i>
-            obi.com
+            <span id="connectedDomain">obi.com / obfpt.com</span>
           </span>
           <span class="text-slate-600">|</span>
           <span class="flex items-center text-emerald-400">
@@ -98,7 +98,7 @@
               type="text"
               id="usernameInput"
               class="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-100 placeholder-slate-500 outline-none transition font-mono text-sm"
-              placeholder="Masukkan NIK"
+              placeholder="Masukkan NIK / Username"
               value=""
               required />
           </div>
@@ -301,7 +301,7 @@
         Pencarian User Active Directory
       </h3>
       <p class="text-sm text-slate-400 mt-1">
-        Masukkan SAMAccountName di atas untuk menampilkan detail user.
+        Masukkan SAMAccountName / NIK di atas untuk menampilkan detail user.
       </p>
     </div>
 
@@ -363,6 +363,7 @@
           WhenCreated: data.whencreated || "-",
           LastLogonDate: data.lastlogon_formatted || data.lastlogon || "-",
           ManagerDN: data.manager || "Tidak Ada Manager",
+          SourceDomain: data.source_domain || "obi.com",
           DirectReports: directReports,
           MemberOf: memberOf,
         };
@@ -385,12 +386,16 @@
       document.getElementById("userDashboard").classList.add("hidden");
       document.getElementById("loadingState").classList.add("hidden");
       document.getElementById("emptyState").classList.remove("hidden");
+      document.getElementById("connectedDomain").innerText = "obi.com / obfpt.com";
     }
 
     function renderUserData(data) {
       document.getElementById("loadingState").classList.add("hidden");
       document.getElementById("emptyState").classList.add("hidden");
       document.getElementById("userDashboard").classList.remove("hidden");
+
+      // Menampilkan Domain Asal User di Header
+      document.getElementById("connectedDomain").innerText = data.SourceDomain;
 
       const initials = data.DisplayName.split(" ")
         .map((n) => n[0])
