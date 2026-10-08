@@ -98,8 +98,8 @@
               type="text"
               id="usernameInput"
               class="w-full pl-10 pr-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-slate-100 placeholder-slate-500 outline-none transition font-mono text-sm"
-              placeholder="Masukkan SAMAccountName (contoh: D1124000064)"
-              value="D1124000064"
+              placeholder="Masukkan NIK"
+              value=""
               required />
           </div>
 
@@ -203,12 +203,6 @@
             class="tab-btn px-6 py-3.5 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
             <i class="fa-solid fa-building-user"></i> Organization & Manager
           </button>
-          <button
-            onclick="switchTab('raw')"
-            id="tab-raw"
-            class="tab-btn px-6 py-3.5 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center gap-2 whitespace-nowrap">
-            <i class="fa-solid fa-code"></i> Raw JSON Data
-          </button>
         </div>
 
         <div class="p-6">
@@ -294,13 +288,6 @@
               <div id="directReportsList" class="space-y-2"></div>
             </div>
           </div>
-
-          <!-- Tab 4: Raw JSON -->
-          <div id="content-raw" class="tab-content hidden space-y-3">
-            <pre
-              class="bg-slate-900 border border-slate-800 p-4 rounded-lg code-font text-xs text-emerald-400 overflow-x-auto max-h-96"
-              id="rawOutput"></pre>
-          </div>
         </div>
       </div>
     </div>
@@ -339,7 +326,6 @@
       showLoading();
 
       try {
-        // Panggil file get-user.php terpisah via Fetch
         const response = await fetch(
           `get-user.php?username=${encodeURIComponent(query)}`,
         );
@@ -379,7 +365,6 @@
           ManagerDN: data.manager || "Tidak Ada Manager",
           DirectReports: directReports,
           MemberOf: memberOf,
-          RawData: data,
         };
 
         renderUserData(formattedUser);
@@ -491,13 +476,6 @@
       } else {
         reportsList.innerHTML = `<div class="text-xs text-slate-500 italic">Tidak ada direct reports.</div>`;
       }
-
-      // Raw Output
-      document.getElementById("rawOutput").innerText = JSON.stringify(
-        data.RawData,
-        null,
-        2,
-      );
     }
 
     function switchTab(tabName) {
