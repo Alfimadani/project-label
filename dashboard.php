@@ -61,7 +61,7 @@ $endRecord   = min($offset + $limit, $totalData);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nexus Enterprise - Asset Label Generator & DB</title>
+    <title>Nexus Enterprise - Dashboard</title>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -70,6 +70,9 @@ $endRecord   = min($offset + $limit, $totalData);
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome (untuk Tab Active Directory) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -120,6 +123,10 @@ $endRecord   = min($offset + $limit, $totalData);
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
+        .code-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
     </style>
 
     <!-- JSZip & FileSaver untuk fitur Export Drone -->
@@ -149,7 +156,7 @@ $endRecord   = min($offset + $limit, $totalData);
 
             <!-- Navigation Items -->
             <div class="space-y-6">
-                <!-- MENU UTAMA 1 -->
+                <!-- MENU UTAMA 1: ASET IT -->
                 <div>
                     <span class="px-3 text-[10px] font-mono uppercase tracking-widest text-slate-500 font-bold">Modul Aset IT</span>
                     <nav class="mt-2.5 space-y-1">
@@ -166,7 +173,7 @@ $endRecord   = min($offset + $limit, $totalData);
                     </nav>
                 </div>
 
-                <!-- MENU UTAMA 2 -->
+                <!-- MENU UTAMA 2: PEMETAAN DRONE -->
                 <div>
                     <span class="px-3 text-[10px] font-mono uppercase tracking-widest text-slate-500 font-bold">Modul Pemetaan</span>
                     <nav class="mt-2.5 space-y-1">
@@ -174,6 +181,18 @@ $endRecord   = min($offset + $limit, $totalData);
                             class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition duration-200 <?= $activeTab === 'drone' ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' ?>">
                             <i data-lucide="plane" class="w-4 h-4 <?= $activeTab === 'drone' ? 'text-white' : 'text-slate-400' ?>"></i>
                             <span>Sistem Watermark Drone</span>
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- MENU UTAMA 3: ACTIVE DIRECTORY -->
+                <div>
+                    <span class="px-3 text-[10px] font-mono uppercase tracking-widest text-slate-500 font-bold">Modul Direktori</span>
+                    <nav class="mt-2.5 space-y-1">
+                        <a href="dashboard.php?tab=ad_user"
+                            class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium text-xs transition duration-200 <?= $activeTab === 'ad_user' ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-lg shadow-indigo-600/30 font-semibold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60' ?>">
+                            <i data-lucide="network" class="w-4 h-4 <?= $activeTab === 'ad_user' ? 'text-white' : 'text-slate-400' ?>"></i>
+                            <span>AD User Explorer</span>
                         </a>
                     </nav>
                 </div>
@@ -222,6 +241,8 @@ $endRecord   = min($offset + $limit, $totalData);
                             echo 'Database Rekapitulasi Aset IT';
                         } elseif ($activeTab === 'drone') {
                             echo 'Sistem Pemetaan & Batch Watermark Drone';
+                        } elseif ($activeTab === 'ad_user') {
+                            echo 'Active Directory User Explorer';
                         } else {
                             echo 'Dashboard';
                         }
@@ -283,6 +304,19 @@ $endRecord   = min($offset + $limit, $totalData);
                         <i data-lucide="download" class="w-4 h-4"></i>
                         <span>Download ZIP</span>
                     </button>
+                </div>
+            <?php elseif ($activeTab === 'ad_user'): ?>
+                <!-- Domain Status Indicator untuk Active Directory -->
+                <div class="flex items-center gap-3 text-xs bg-slate-100 border border-slate-200/80 rounded-xl px-3 py-1.5">
+                    <span class="flex items-center text-slate-700 font-medium">
+                        <i class="fa-solid fa-server text-indigo-600 mr-2"></i>
+                        <span id="connectedDomain">obi.com / obfpt.com / ad.lygend.com</span>
+                    </span>
+                    <span class="text-slate-300">|</span>
+                    <span class="flex items-center text-emerald-600 font-semibold">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mr-2"></span>
+                        Domain Connected
+                    </span>
                 </div>
             <?php else: ?>
                 <!-- Action Buttons untuk Tab Database -->
@@ -711,6 +745,204 @@ $endRecord   = min($offset + $limit, $totalData);
             </div>
         <?php endif; ?>
 
+        <!-- KONTEN TAB 4: ACTIVE DIRECTORY USER EXPLORER -->
+        <?php if ($activeTab === 'ad_user'): ?>
+            <div class="p-6 max-w-[1600px] w-full mx-auto space-y-6">
+
+                <!-- Form Pencarian -->
+                <section class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm">
+                    <form id="searchForm" onsubmit="handleAdSearch(event)" class="space-y-4">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <div class="relative flex-1">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </div>
+                                <input
+                                    type="text"
+                                    id="usernameInput"
+                                    class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none transition font-mono text-xs"
+                                    placeholder="Masukkan NIK / Username"
+                                    value=""
+                                    required />
+                            </div>
+
+                            <button
+                                type="submit"
+                                id="searchBtn"
+                                class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-indigo-600/20 active:scale-95">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <span>Cari User</span>
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Dashboard Result -->
+                <div id="userDashboard" class="hidden space-y-6">
+                    <!-- Overview Card -->
+                    <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm relative overflow-hidden">
+                        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                            <div class="flex items-center space-x-5">
+                                <div class="relative">
+                                    <div
+                                        class="w-20 h-20 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-2xl font-bold text-white shadow-inner"
+                                        id="userAvatar">
+                                        --
+                                    </div>
+                                    <span
+                                        id="statusIndicator"
+                                        class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-white rounded-full"></span>
+                                </div>
+
+                                <div>
+                                    <div class="flex items-center space-x-3">
+                                        <h2 class="text-2xl font-bold text-slate-800" id="displayName">
+                                            -
+                                        </h2>
+                                        <span
+                                            id="accountStatusBadge"
+                                            class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
+                                            Enabled
+                                        </span>
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-0.5 font-mono" id="samAccountName">
+                                        sAMAccountName: -
+                                    </p>
+                                    <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-slate-600 mt-2">
+                                        <span class="flex items-center">
+                                            <i class="fa-solid fa-briefcase text-slate-400 mr-1.5"></i>
+                                            <span id="jobTitle">-</span>
+                                        </span>
+                                        <span class="flex items-center">
+                                            <i class="fa-solid fa-sitemap text-slate-400 mr-1.5"></i>
+                                            <span id="department">-</span>
+                                        </span>
+                                        <span class="flex items-center">
+                                            <i class="fa-solid fa-envelope text-slate-400 mr-1.5"></i>
+                                            <span id="emailAddr">-</span>
+                                        </span>
+                                        <span class="flex items-center">
+                                            <i class="fa-solid fa-phone text-slate-400 mr-1.5"></i>
+                                            <span id="phoneNum">-</span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-left md:text-right border-t md:border-t-0 pt-4 md:pt-0 border-slate-200">
+                                <span class="text-xs text-slate-400 block font-medium">Last Logon</span>
+                                <span class="text-xs text-slate-700 font-mono font-semibold" id="lastLogon">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detail Tabs -->
+                    <div class="bg-white border border-slate-200/80 rounded-2xl overflow-hidden shadow-sm">
+                        <div class="flex border-b border-slate-200 bg-slate-50/80 overflow-x-auto">
+                            <button
+                                onclick="switchAdTab('general')"
+                                id="tab-general"
+                                class="ad-tab-btn px-6 py-3.5 text-xs font-semibold border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2 whitespace-nowrap">
+                                <i class="fa-solid fa-id-card"></i> General Info
+                            </button>
+                            <button
+                                onclick="switchAdTab('groups')"
+                                id="tab-groups"
+                                class="ad-tab-btn px-6 py-3.5 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 whitespace-nowrap">
+                                <i class="fa-solid fa-users"></i> Group Memberships (<span id="groupCount">0</span>)
+                            </button>
+                            <button
+                                onclick="switchAdTab('org')"
+                                id="tab-org"
+                                class="ad-tab-btn px-6 py-3.5 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 whitespace-nowrap">
+                                <i class="fa-solid fa-building-user"></i> Organization & Manager
+                            </button>
+                        </div>
+
+                        <div class="p-6">
+                            <!-- Tab 1: General Info -->
+                            <div id="content-general" class="ad-tab-content space-y-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Distinguished Name (DN)</span>
+                                        <span class="text-xs code-font text-indigo-600 break-all select-all font-semibold" id="distinguishedName">-</span>
+                                    </div>
+                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">User Principal Name (UPN)</span>
+                                        <span class="text-xs code-font text-slate-800 font-medium" id="userPrincipalName">-</span>
+                                    </div>
+                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Telephone Number</span>
+                                        <span class="text-xs code-font text-slate-800 font-medium" id="generalPhone">-</span>
+                                    </div>
+                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Password Last Set</span>
+                                        <span class="text-xs code-font text-slate-800 font-medium" id="pwdLastSet">-</span>
+                                    </div>
+                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Account Created Date</span>
+                                        <span class="text-xs code-font text-slate-800 font-medium" id="whenCreated">-</span>
+                                    </div>
+                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">User Account Control (UAC)</span>
+                                        <span class="text-xs code-font text-slate-800 font-medium" id="userAccountControl">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tab 2: Groups -->
+                            <div id="content-groups" class="ad-tab-content hidden space-y-3">
+                                <div class="grid grid-cols-1 gap-2" id="groupList"></div>
+                            </div>
+
+                            <!-- Tab 3: Organization -->
+                            <div id="content-org" class="ad-tab-content hidden space-y-6">
+                                <div>
+                                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+                                        Manager
+                                    </h3>
+                                    <div class="bg-slate-50 border border-slate-200/80 p-4 rounded-xl">
+                                        <p class="text-xs code-font text-indigo-600 font-semibold break-all" id="managerDn">
+                                            -
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-3">
+                                        Direct Reports
+                                    </h3>
+                                    <div id="directReportsList" class="space-y-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- State Loading & Empty -->
+                <div id="emptyState" class="bg-white border border-slate-200/80 rounded-2xl p-12 text-center shadow-sm">
+                    <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-user-gear text-2xl"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-800">
+                        Pencarian User Active Directory
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">
+                        Masukkan SAMAccountName / NIK di atas untuk menampilkan detail user.
+                    </p>
+                </div>
+
+                <div id="loadingState" class="hidden bg-white border border-slate-200/80 rounded-2xl p-12 text-center shadow-sm">
+                    <div class="inline-block animate-spin text-indigo-600 text-3xl mb-3">
+                        <i class="fa-solid fa-circle-notch"></i>
+                    </div>
+                    <p class="text-xs font-semibold text-slate-700">
+                        Mengambil data dari Active Directory...
+                    </p>
+                </div>
+            </div>
+        <?php endif; ?>
+
     </main>
 
     <!-- Modal Konfirmasi Reset -->
@@ -755,7 +987,175 @@ $endRecord   = min($offset + $limit, $totalData);
             urlParams.set('page', '1');
             window.location.search = urlParams.toString();
         }
+
+        // FUNGSI KHUSUS UNTUK TAB ACTIVE DIRECTORY (AD USER EXPLORER)
+        async function handleAdSearch(e) {
+            e.preventDefault();
+            const query = document.getElementById("usernameInput").value.trim();
+            if (!query) return;
+
+            showAdLoading();
+
+            try {
+                const response = await fetch(`ad_user/get-user.php?username=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (data.error) {
+                    alert("Informasi: " + data.error);
+                    showAdEmptyState();
+                    return;
+                }
+
+                const memberOf = Array.isArray(data.memberof) ?
+                    data.memberof :
+                    data.memberof ? [data.memberof] : [];
+                const directReports = Array.isArray(data.directreports) ?
+                    data.directreports :
+                    data.directreports ? [data.directreports] : [];
+
+                const isEnabled = !(
+                    data.useraccountcontrol && parseInt(data.useraccountcontrol) & 2
+                );
+
+                const formattedUser = {
+                    SamAccountName: data.samaccountname || query,
+                    DisplayName: data.displayname || data.cn || query,
+                    Title: data.title || "-",
+                    Department: data.department || "-",
+                    EmailAddress: data.mail || "-",
+                    TelephoneNumber: data.telephonenumber || "-",
+                    Enabled: isEnabled,
+                    DistinguishedName: data.distinguishedname || "-",
+                    UserPrincipalName: data.userprincipalname || "-",
+                    UserAccountControl: data.useraccountcontrol || "-",
+                    PasswordLastSet: data.pwdlastset_formatted || data.pwdlastset || "-",
+                    WhenCreated: data.whencreated || "-",
+                    LastLogonDate: data.lastlogon_formatted || data.lastlogon || "-",
+                    ManagerDN: data.manager || "Tidak Ada Manager",
+                    SourceDomain: data.source_domain || "obi.com",
+                    DirectReports: directReports,
+                    MemberOf: memberOf,
+                };
+
+                renderAdUserData(formattedUser);
+            } catch (err) {
+                console.error(err);
+                alert("Gagal terhubung ke endpoint ad_user/get-user.php");
+                showAdEmptyState();
+            }
+        }
+
+        function showAdLoading() {
+            document.getElementById("userDashboard").classList.add("hidden");
+            document.getElementById("emptyState").classList.add("hidden");
+            document.getElementById("loadingState").classList.remove("hidden");
+        }
+
+        function showAdEmptyState() {
+            document.getElementById("userDashboard").classList.add("hidden");
+            document.getElementById("loadingState").classList.add("hidden");
+            document.getElementById("emptyState").classList.remove("hidden");
+            const elem = document.getElementById("connectedDomain");
+            if (elem) elem.innerText = "obi.com / obfpt.com / ad.lygend.com";
+        }
+
+        function renderAdUserData(data) {
+            document.getElementById("loadingState").classList.add("hidden");
+            document.getElementById("emptyState").classList.add("hidden");
+            document.getElementById("userDashboard").classList.remove("hidden");
+
+            const connectedElem = document.getElementById("connectedDomain");
+            if (connectedElem) connectedElem.innerText = data.SourceDomain;
+
+            const initials = data.DisplayName.split(" ")
+                .map((n) => n[0])
+                .join("")
+                .substring(0, 2)
+                .toUpperCase();
+            document.getElementById("userAvatar").innerText = initials || "AD";
+            document.getElementById("displayName").innerText = data.DisplayName;
+            document.getElementById("samAccountName").innerText = `sAMAccountName: ${data.SamAccountName}`;
+            document.getElementById("jobTitle").innerText = data.Title;
+            document.getElementById("department").innerText = data.Department;
+            document.getElementById("emailAddr").innerText = data.EmailAddress;
+            document.getElementById("phoneNum").innerText = data.TelephoneNumber;
+            document.getElementById("lastLogon").innerText = data.LastLogonDate;
+
+            const statusBadge = document.getElementById("accountStatusBadge");
+            const statusIndicator = document.getElementById("statusIndicator");
+            if (data.Enabled) {
+                statusBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200";
+                statusBadge.innerText = "Enabled";
+                statusIndicator.className = "absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-white rounded-full";
+            } else {
+                statusBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-200";
+                statusBadge.innerText = "Disabled";
+                statusIndicator.className = "absolute -bottom-1 -right-1 w-5 h-5 bg-rose-500 border-4 border-white rounded-full";
+            }
+
+            // General Info
+            document.getElementById("distinguishedName").innerText = data.DistinguishedName;
+            document.getElementById("userPrincipalName").innerText = data.UserPrincipalName;
+            document.getElementById("generalPhone").innerText = data.TelephoneNumber;
+            document.getElementById("pwdLastSet").innerText = data.PasswordLastSet;
+            document.getElementById("whenCreated").innerText = data.WhenCreated;
+            document.getElementById("userAccountControl").innerText = data.UserAccountControl;
+
+            // Group Memberships
+            const groupList = document.getElementById("groupList");
+            document.getElementById("groupCount").innerText = data.MemberOf.length;
+            groupList.innerHTML = "";
+
+            if (data.MemberOf.length > 0) {
+                data.MemberOf.forEach((group) => {
+                    const groupCN = group.split(",")[0].replace("CN=", "");
+                    groupList.innerHTML += `
+                        <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3 overflow-hidden">
+                                <i class="fa-solid fa-users-gear text-indigo-600 text-sm flex-shrink-0"></i>
+                                <div class="truncate">
+                                    <span class="text-xs font-bold text-slate-800 block">${groupCN}</span>
+                                    <span class="text-[11px] code-font text-slate-500 break-all">${group}</span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                groupList.innerHTML = `<div class="text-xs text-slate-400 italic">Tidak terdaftar di grup mana pun.</div>`;
+            }
+
+            // Manager & Reports
+            document.getElementById("managerDn").innerText = data.ManagerDN;
+            const reportsList = document.getElementById("directReportsList");
+            reportsList.innerHTML = "";
+
+            if (data.DirectReports.length > 0) {
+                data.DirectReports.forEach((rep) => {
+                    reportsList.innerHTML += `
+                        <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl flex items-center space-x-3">
+                            <i class="fa-solid fa-user text-slate-400 text-sm"></i>
+                            <span class="text-xs code-font text-slate-700 break-all font-medium">${rep}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                reportsList.innerHTML = `<div class="text-xs text-slate-400 italic">Tidak ada direct reports.</div>`;
+            }
+        }
+
+        function switchAdTab(tabName) {
+            document.querySelectorAll(".ad-tab-content").forEach((el) => el.classList.add("hidden"));
+            document.querySelectorAll(".ad-tab-btn").forEach((btn) => {
+                btn.className = "ad-tab-btn px-6 py-3.5 text-xs font-semibold border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center gap-2 whitespace-nowrap";
+            });
+
+            document.getElementById(`content-${tabName}`).classList.remove("hidden");
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.className = "ad-tab-btn px-6 py-3.5 text-xs font-semibold border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2 whitespace-nowrap";
+        }
     </script>
+
     <!-- Script JS Utama Label -->
     <script src="label/js/script.js"></script>
 
