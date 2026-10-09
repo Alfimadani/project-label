@@ -691,7 +691,7 @@ $endRecord   = min($offset + $limit, $totalData);
                                 </div>
                                 <div>
                                     <label class="block text-slate-500 mb-1">Offset Y</label>
-                                    <input type="number" id="shadowY" value="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800">
+                                    <input type="number" id="offsetY" value="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800">
                                 </div>
                             </div>
                         </div>
@@ -761,7 +761,7 @@ $endRecord   = min($offset + $limit, $totalData);
                                     type="text"
                                     id="usernameInput"
                                     class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-800 placeholder-slate-400 outline-none transition font-mono text-xs"
-                                    placeholder="Masukkan NIK / Username"
+                                    placeholder="Masukkan Awalan NIK / SAMAccountName (misal: D1124000)"
                                     value=""
                                     required />
                             </div>
@@ -777,8 +777,37 @@ $endRecord   = min($offset + $limit, $totalData);
                     </form>
                 </section>
 
+                <!-- Tabel Pilihan jika Ditemukan Banyak User -->
+                <div id="multipleResults" class="hidden bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-4">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-list text-indigo-600"></i>
+                            Ditemukan <span id="resultsCount" class="text-indigo-600">0</span> User
+                        </h3>
+                        <p class="text-xs text-slate-400">Pilih user untuk melihat detail lengkap</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-700">
+                            <thead class="bg-slate-900 text-[11px] text-slate-300 uppercase tracking-wider font-bold">
+                                <tr>
+                                    <th class="p-3">sAMAccountName / NIK</th>
+                                    <th class="p-3">Nama Lengkap</th>
+                                    <th class="p-3">Department</th>
+                                    <th class="p-3">Domain</th>
+                                    <th class="p-3 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Dashboard Result -->
                 <div id="userDashboard" class="hidden space-y-6">
+                    <button onclick="backToAdResults()" id="backBtn" class="hidden text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-xl border border-slate-200 transition items-center gap-2 font-medium">
+                        <i class="fa-solid fa-arrow-left"></i> Kembali ke Daftar Hasil
+                    </button>
+
                     <!-- Overview Card -->
                     <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm relative overflow-hidden">
                         <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
@@ -928,7 +957,7 @@ $endRecord   = min($offset + $limit, $totalData);
                         Pencarian User Active Directory
                     </h3>
                     <p class="text-xs text-slate-500 mt-1">
-                        Masukkan SAMAccountName / NIK di atas untuk menampilkan detail user.
+                        Masukkan SAMAccountName / Awalan NIK di atas.
                     </p>
                 </div>
 
@@ -989,6 +1018,8 @@ $endRecord   = min($offset + $limit, $totalData);
         }
 
         // FUNGSI KHUSUS UNTUK TAB ACTIVE DIRECTORY (AD USER EXPLORER)
+        let globalAdUsersList = [];
+
         async function handleAdSearch(e) {
             e.preventDefault();
             const query = document.getElementById("usernameInput").value.trim();
@@ -1006,38 +1037,18 @@ $endRecord   = min($offset + $limit, $totalData);
                     return;
                 }
 
-                const memberOf = Array.isArray(data.memberof) ?
-                    data.memberof :
-                    data.memberof ? [data.memberof] : [];
-                const directReports = Array.isArray(data.directreports) ?
-                    data.directreports :
-                    data.directreports ? [data.directreports] : [];
+                globalAdUsersList = data.users;
 
-                const isEnabled = !(
-                    data.useraccountcontrol && parseInt(data.useraccountcontrol) & 2
-                );
-
-                const formattedUser = {
-                    SamAccountName: data.samaccountname || query,
-                    DisplayName: data.displayname || data.cn || query,
-                    Title: data.title || "-",
-                    Department: data.department || "-",
-                    EmailAddress: data.mail || "-",
-                    TelephoneNumber: data.telephonenumber || "-",
-                    Enabled: isEnabled,
-                    DistinguishedName: data.distinguishedname || "-",
-                    UserPrincipalName: data.userprincipalname || "-",
-                    UserAccountControl: data.useraccountcontrol || "-",
-                    PasswordLastSet: data.pwdlastset_formatted || data.pwdlastset || "-",
-                    WhenCreated: data.whencreated || "-",
-                    LastLogonDate: data.lastlogon_formatted || data.lastlogon || "-",
-                    ManagerDN: data.manager || "Tidak Ada Manager",
-                    SourceDomain: data.source_domain || "obi.com",
-                    DirectReports: directReports,
-                    MemberOf: memberOf,
-                };
-
-                renderAdUserData(formattedUser);
+                if (data.count === 1) {
+                    const backBtn = document.getElementById("backBtn");
+                    if (backBtn) {
+                        backBtn.classList.add("hidden");
+                        backBtn.classList.remove("flex");
+                    }
+                    renderSingleAdUserData(globalAdUsersList[0]);
+                } else {
+                    renderMultipleAdUsersTable(globalAdUsersList);
+                }
             } catch (err) {
                 console.error(err);
                 alert("Gagal terhubung ke endpoint ad_user/get-user.php");
@@ -1045,45 +1056,118 @@ $endRecord   = min($offset + $limit, $totalData);
             }
         }
 
+        function renderMultipleAdUsersTable(users) {
+            document.getElementById("loadingState").classList.add("hidden");
+            document.getElementById("emptyState").classList.add("hidden");
+            document.getElementById("userDashboard").classList.add("hidden");
+            document.getElementById("multipleResults").classList.remove("hidden");
+
+            document.getElementById("resultsCount").innerText = users.length;
+            const tbody = document.getElementById("userTableBody");
+            tbody.innerHTML = "";
+
+            users.forEach((user, index) => {
+                const samName = user.samaccountname || "-";
+                const fullName = user.displayname || user.cn || "-";
+                const dept = user.department || "-";
+                const domain = user.source_domain || "-";
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-mono font-bold text-indigo-600">${samName}</td>
+                        <td class="p-3 font-semibold text-slate-800">${fullName}</td>
+                        <td class="p-3 text-slate-600">${dept}</td>
+                        <td class="p-3 text-slate-600"><span class="px-2 py-0.5 text-xs bg-slate-100 rounded-md border border-slate-200 font-mono">${domain}</span></td>
+                        <td class="p-3 text-center">
+                            <button onclick="selectAdUser(${index})" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg transition flex items-center gap-1 mx-auto shadow-sm">
+                                <i class="fa-solid fa-eye"></i> Detail
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function selectAdUser(index) {
+            document.getElementById("multipleResults").classList.add("hidden");
+            const backBtn = document.getElementById("backBtn");
+            if (backBtn) {
+                backBtn.classList.remove("hidden");
+                backBtn.classList.add("flex");
+            }
+            renderSingleAdUserData(globalAdUsersList[index]);
+        }
+
+        function backToAdResults() {
+            document.getElementById("userDashboard").classList.add("hidden");
+            document.getElementById("multipleResults").classList.remove("hidden");
+        }
+
         function showAdLoading() {
             document.getElementById("userDashboard").classList.add("hidden");
+            document.getElementById("multipleResults").classList.add("hidden");
             document.getElementById("emptyState").classList.add("hidden");
             document.getElementById("loadingState").classList.remove("hidden");
         }
 
         function showAdEmptyState() {
             document.getElementById("userDashboard").classList.add("hidden");
+            document.getElementById("multipleResults").classList.add("hidden");
             document.getElementById("loadingState").classList.add("hidden");
             document.getElementById("emptyState").classList.remove("hidden");
             const elem = document.getElementById("connectedDomain");
             if (elem) elem.innerText = "obi.com / obfpt.com / ad.lygend.com";
         }
 
-        function renderAdUserData(data) {
+        function renderSingleAdUserData(data) {
             document.getElementById("loadingState").classList.add("hidden");
             document.getElementById("emptyState").classList.add("hidden");
             document.getElementById("userDashboard").classList.remove("hidden");
 
             const connectedElem = document.getElementById("connectedDomain");
-            if (connectedElem) connectedElem.innerText = data.SourceDomain;
+            if (connectedElem) connectedElem.innerText = data.source_domain || "obi.com";
 
-            const initials = data.DisplayName.split(" ")
+            const memberOf = Array.isArray(data.memberof) ? data.memberof : data.memberof ? [data.memberof] : [];
+            const directReports = Array.isArray(data.directreports) ? data.directreports : data.directreports ? [data.directreports] : [];
+            const isEnabled = !(data.useraccountcontrol && parseInt(data.useraccountcontrol) & 2);
+
+            const formattedUser = {
+                SamAccountName: data.samaccountname || "-",
+                DisplayName: data.displayname || data.cn || "-",
+                Title: data.title || "-",
+                Department: data.department || "-",
+                EmailAddress: data.mail || "-",
+                TelephoneNumber: data.telephonenumber || "-",
+                Enabled: isEnabled,
+                DistinguishedName: data.distinguishedname || "-",
+                UserPrincipalName: data.userprincipalname || "-",
+                UserAccountControl: data.useraccountcontrol || "-",
+                PasswordLastSet: data.pwdlastset_formatted || data.pwdlastset || "-",
+                WhenCreated: data.whencreated || "-",
+                LastLogonDate: data.lastlogon_formatted || data.lastlogon || "-",
+                ManagerDN: data.manager || "Tidak Ada Manager",
+                DirectReports: directReports,
+                MemberOf: memberOf,
+            };
+
+            const initials = formattedUser.DisplayName.split(" ")
                 .map((n) => n[0])
                 .join("")
                 .substring(0, 2)
                 .toUpperCase();
+
             document.getElementById("userAvatar").innerText = initials || "AD";
-            document.getElementById("displayName").innerText = data.DisplayName;
-            document.getElementById("samAccountName").innerText = `sAMAccountName: ${data.SamAccountName}`;
-            document.getElementById("jobTitle").innerText = data.Title;
-            document.getElementById("department").innerText = data.Department;
-            document.getElementById("emailAddr").innerText = data.EmailAddress;
-            document.getElementById("phoneNum").innerText = data.TelephoneNumber;
-            document.getElementById("lastLogon").innerText = data.LastLogonDate;
+            document.getElementById("displayName").innerText = formattedUser.DisplayName;
+            document.getElementById("samAccountName").innerText = `sAMAccountName: ${formattedUser.SamAccountName}`;
+            document.getElementById("jobTitle").innerText = formattedUser.Title;
+            document.getElementById("department").innerText = formattedUser.Department;
+            document.getElementById("emailAddr").innerText = formattedUser.EmailAddress;
+            document.getElementById("phoneNum").innerText = formattedUser.TelephoneNumber;
+            document.getElementById("lastLogon").innerText = formattedUser.LastLogonDate;
 
             const statusBadge = document.getElementById("accountStatusBadge");
             const statusIndicator = document.getElementById("statusIndicator");
-            if (data.Enabled) {
+            if (formattedUser.Enabled) {
                 statusBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200";
                 statusBadge.innerText = "Enabled";
                 statusIndicator.className = "absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-white rounded-full";
@@ -1093,21 +1177,19 @@ $endRecord   = min($offset + $limit, $totalData);
                 statusIndicator.className = "absolute -bottom-1 -right-1 w-5 h-5 bg-rose-500 border-4 border-white rounded-full";
             }
 
-            // General Info
-            document.getElementById("distinguishedName").innerText = data.DistinguishedName;
-            document.getElementById("userPrincipalName").innerText = data.UserPrincipalName;
-            document.getElementById("generalPhone").innerText = data.TelephoneNumber;
-            document.getElementById("pwdLastSet").innerText = data.PasswordLastSet;
-            document.getElementById("whenCreated").innerText = data.WhenCreated;
-            document.getElementById("userAccountControl").innerText = data.UserAccountControl;
+            document.getElementById("distinguishedName").innerText = formattedUser.DistinguishedName;
+            document.getElementById("userPrincipalName").innerText = formattedUser.UserPrincipalName;
+            document.getElementById("generalPhone").innerText = formattedUser.TelephoneNumber;
+            document.getElementById("pwdLastSet").innerText = formattedUser.PasswordLastSet;
+            document.getElementById("whenCreated").innerText = formattedUser.WhenCreated;
+            document.getElementById("userAccountControl").innerText = formattedUser.UserAccountControl;
 
-            // Group Memberships
             const groupList = document.getElementById("groupList");
-            document.getElementById("groupCount").innerText = data.MemberOf.length;
+            document.getElementById("groupCount").innerText = formattedUser.MemberOf.length;
             groupList.innerHTML = "";
 
-            if (data.MemberOf.length > 0) {
-                data.MemberOf.forEach((group) => {
+            if (formattedUser.MemberOf.length > 0) {
+                formattedUser.MemberOf.forEach((group) => {
                     const groupCN = group.split(",")[0].replace("CN=", "");
                     groupList.innerHTML += `
                         <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl flex items-center justify-between">
@@ -1125,13 +1207,12 @@ $endRecord   = min($offset + $limit, $totalData);
                 groupList.innerHTML = `<div class="text-xs text-slate-400 italic">Tidak terdaftar di grup mana pun.</div>`;
             }
 
-            // Manager & Reports
-            document.getElementById("managerDn").innerText = data.ManagerDN;
+            document.getElementById("managerDn").innerText = formattedUser.ManagerDN;
             const reportsList = document.getElementById("directReportsList");
             reportsList.innerHTML = "";
 
-            if (data.DirectReports.length > 0) {
-                data.DirectReports.forEach((rep) => {
+            if (formattedUser.DirectReports.length > 0) {
+                formattedUser.DirectReports.forEach((rep) => {
                     reportsList.innerHTML += `
                         <div class="bg-slate-50 border border-slate-200/80 p-3 rounded-xl flex items-center space-x-3">
                             <i class="fa-solid fa-user text-slate-400 text-sm"></i>
