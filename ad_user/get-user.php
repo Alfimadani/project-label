@@ -6,37 +6,37 @@ header('Content-Type: application/json; charset=utf-8');
 $username = isset($_GET['username']) ? trim($_GET['username']) : '';
 
 if (empty($username)) {
-    echo json_encode(['error' => 'Username tidak boleh kosong'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['error' => 'Username / NIK tidak boleh kosong'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
 $sanitizedUser = preg_replace('/[^a-zA-Z0-9_\-\.\s]/', '', $username);
 
-// Daftar konfigurasi domain yang akan diperiksa secara bergantian
+// Konfigurasi 3 domain
 $domains = [
     [
-        'name'       => 'obi.com',
-        'server'     => 'obi.com',
-        'port'       => 389,
-        'user'       => 'OBI\Helpdesktop',
-        'pass'       => 'OBit#%78@',
-        'baseDn'     => 'DC=obi,DC=com'
+        'name'   => 'obi.com',
+        'server' => 'obi.com',
+        'port'   => 389,
+        'user'   => 'OBI\Helpdesktop',
+        'pass'   => 'OBit#%78@',
+        'baseDn' => 'DC=obi,DC=com'
     ],
     [
-        'name'       => 'obfpt.com',
-        'server'     => 'obfpt.com',
-        'port'       => 389,
-        'user'       => 'OBFPT\Helpdesktop',
-        'pass'       => 'OSTit#%78@',
-        'baseDn'     => 'DC=obfpt,DC=com'
+        'name'   => 'obfpt.com',
+        'server' => 'obfpt.com',
+        'port'   => 389,
+        'user'   => 'OBFPT\Helpdesktop',
+        'pass'   => 'OSTit#%78@',
+        'baseDn' => 'DC=obfpt,DC=com'
     ],
     [
-        'name'       => 'ad.lygend.com',
-        'server'     => 'ad.lygend.com',
-        'port'       => 389,
-        'user'       => 'ADLYGEND\administrator',
-        'pass'       => 'LQzy90#&2!',
-        'baseDn'     => 'DC=ad,DC=lygend,DC=com'
+        'name'   => 'ad.lygend.com',
+        'server' => 'ad.lygend.com',
+        'port'   => 389,
+        'user'   => 'ADLYGEND\administrator',
+        'pass'   => 'LQzy90#&2!',
+        'baseDn' => 'DC=ad,DC=lygend,DC=com'
     ]
 ];
 
@@ -60,11 +60,10 @@ function parseAdTimestamp($filetime)
     return date('Y-m-d H:i:s', $unixTimestamp);
 }
 
-// Helper function untuk query ke masing-masing domain
-function queryDomain($config, $sanitizedUser)
+function queryDomainMulti($config, $sanitizedUser)
 {
     $ldapConn = @ldap_connect($config['server'], $config['port']);
-    if (!$ldapConn) return false;
+    if (!$ldapConn) return [];
 
     ldap_set_option($ldapConn, LDAP_OPT_PROTOCOL_VERSION, 3);
     ldap_set_option($ldapConn, LDAP_OPT_REFERRALS, 0);
@@ -72,70 +71,72 @@ function queryDomain($config, $sanitizedUser)
     $bind = @ldap_bind($ldapConn, $config['user'], $config['pass']);
     if (!$bind) {
         @ldap_close($ldapConn);
-        return false;
+        return [];
     }
 
-    $filter = "(|(sAMAccountName=$sanitizedUser)(employeeID=$sanitizedUser)(cn=*$sanitizedUser*))";
+    // Menggunakan Wildcard (*) di akhir query NIK agar menangkap kelanjutan karakternya
+    $filter = "(|(sAMAccountName=$sanitizedUser*)(employeeID=$sanitizedUser*)(cn=*$sanitizedUser*))";
     $search = @ldap_search($ldapConn, $config['baseDn'], $filter);
+
+    $results = [];
 
     if ($search) {
         $entries = @ldap_get_entries($ldapConn, $search);
         @ldap_close($ldapConn);
 
         if ($entries && $entries['count'] > 0) {
-            $user = $entries[0];
-            $userData = [];
+            for ($i = 0; $i < $entries['count']; $i++) {
+                $user = $entries[$i];
+                $userData = [];
 
-            foreach ($user as $key => $val) {
-                if (is_numeric($key)) continue;
+                foreach ($user as $key => $val) {
+                    if (is_numeric($key)) continue;
 
-                if (isset($val['count'])) {
-                    if ($val['count'] == 1) {
-                        $userData[$key] = cleanLdapValue($val[0]);
-                    } else {
-                        $userData[$key] = cleanLdapValue($val);
+                    if (isset($val['count'])) {
+                        if ($val['count'] == 1) {
+                            $userData[$key] = cleanLdapValue($val[0]);
+                        } else {
+                            $userData[$key] = cleanLdapValue($val);
+                        }
                     }
                 }
-            }
 
-            if (!isset($userData['mail'])) {
-                $userData['mail'] = '-';
-            }
+                if (!isset($userData['mail'])) {
+                    $userData['mail'] = '-';
+                }
 
-            if (isset($userData['lastlogon'])) {
-                $userData['lastlogon_formatted'] = parseAdTimestamp($userData['lastlogon']);
-            }
-            if (isset($userData['pwdlastset'])) {
-                $userData['pwdlastset_formatted'] = parseAdTimestamp($userData['pwdlastset']);
-            }
+                if (isset($userData['lastlogon'])) {
+                    $userData['lastlogon_formatted'] = parseAdTimestamp($userData['lastlogon']);
+                }
+                if (isset($userData['pwdlastset'])) {
+                    $userData['pwdlastset_formatted'] = parseAdTimestamp($userData['pwdlastset']);
+                }
 
-            // Menyimpan nama domain asal ditemukannya user
-            $userData['source_domain'] = $config['name'];
-
-            return $userData;
+                $userData['source_domain'] = $config['name'];
+                $results[] = $userData;
+            }
         }
     } else {
         @ldap_close($ldapConn);
     }
 
-    return false;
+    return $results;
 }
 
-$userData = null;
+$allResults = [];
 
-// Iterasi pencarian dari domain pertama hingga domain ketiga
+// Loop pencarian ke semua domain dan gabungkan hasilnya
 foreach ($domains as $domainConfig) {
-    $result = queryDomain($domainConfig, $sanitizedUser);
-    if ($result !== false) {
-        $userData = $result;
-        break; // Hentikan pencarian jika user sudah ditemukan
+    $domainResults = queryDomainMulti($domainConfig, $sanitizedUser);
+    if (!empty($domainResults)) {
+        $allResults = array_merge($allResults, $domainResults);
     }
 }
 
-if (!$userData) {
-    echo json_encode(['error' => "User '$sanitizedUser' tidak ditemukan di domain obi.com, obfpt.com, maupun ad.lygend.com."], JSON_UNESCAPED_UNICODE);
+if (empty($allResults)) {
+    echo json_encode(['error' => "User dengan NIK/Kata kunci '$sanitizedUser' tidak ditemukan di domain mana pun."], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
-echo json_encode($userData, JSON_UNESCAPED_UNICODE);
+echo json_encode(['count' => count($allResults), 'users' => $allResults], JSON_UNESCAPED_UNICODE);
 exit;

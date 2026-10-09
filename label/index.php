@@ -100,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['guest_login'])) {
                 </svg>
             </div>
             <h2 class="text-xl font-bold text-white tracking-wide">Login System</h2>
-            <p class="text-xs text-slate-400 mt-1">Akses Sistem Label Aset IT</p>
+            <p class="text-xs text-slate-400 mt-1">Akses Sistem All in One</p>
         </div>
 
         <div class="p-6">
