@@ -1,0 +1,31 @@
+* [33me426bf6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m pergantian nama pacholder AD
+*   [33m75c443d[m data lengkap dari penyempurnaan AD user
+[32m|[m[33m\[m  
+[32m|[m * [33med69445[m memperlengkap AD user dalam pencarian nik ataupun nama user
+* [33m|[m [33m51c8582[m ganti tulisan di ad searchnya aja
+[33m|[m[33m/[m  
+* [33mcdc61cb[m[33m ([m[1;31morigin/ad[m[33m)[m penambahan dashboard AD user di dashboard
+* [33m7ec414d[m pemindahan file ad ke halaman
+* [33m58886e6[m[33m ([m[1;31morigin/halaman[m[33m, [m[1;32mhalaman[m[33m)[m ada penyesuaian bug penyelesaian bug didalamnnya
+* [33mb1e7228[m pemindahan data dari ddrone ke dashboard secara lengkap beserta penggunannya
+* [33m234828a[m penambahan tab drone dan menu utama 2
+* [33mc78546f[m penambahan navigasi bisa buka tutup navigation
+* [33mc1fef3b[m memastikan guest atau akun yang login bisa mengakses dashboard
+* [33ma4730a7[m sudah bisa menyesuaikan login jika meghapus dengan guest dan administrator, ada yang bisa input dan tidak
+* [33m3a770ba[m bisa nambah ke database tapi guestnya masih bisa input ini wajib tidak bisa
+* [33m1841209[m didashboard pemasangan data login ke dashboard
+* [33m4b106e9[m menambahkan halaman dan menyesuaikan tapi masih untuk guest
+* [33m1c8f524[m halaman administaor siistem penambahan perubahan background
+* [33mc867328[m[33m ([m[1;31morigin/sampleData[m[33m)[m perubahan data yang ada di js/script.js update data sample
+* [33m670fa12[m reload agar cach memaksa update
+* [33ma7dd8c0[m[33m ([m[1;31morigin/tombol-input[m[33m)[m menambahkan fitur login guest dan user, dan menyesuaikan tampilan di indexnya berdasarkan user dan guest
+* [33m7eb0efe[m menambahkan fitur login untuk bisa menggunakan print label input databenya
+* [33m93fe029[m melakukan edit di waktu penggunaan tanggal di js/script.js
+* [33m4a7a5f6[m pembuatan list view php didalam modif script.js dan list_view.php
+* [33mb522abf[m menambahkan fitur button lihat semua data DB Asset di Index
+* [33mfd09b94[m menambahkan fitur database dan validasinya ke SQL
+* [33m9ca2f77[m penambahan sistem input label ke database SQL di api
+* [33m7feb49a[m menambahkan file api didalam folder
+* [33mc441d37[m menambahkan fitur tambah ke DB
+* [33mc0ae8ba[m perubahaan data untuk kembali perapian
+* [33md27f95e[m Initial commit
