@@ -77,8 +77,13 @@ $endRecord   = min($offset + $limit, $totalData);
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-    <!-- CSS khusus cetak label -->
+    <!-- JSZip & FileSaver untuk fitur Export Drone -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <!-- CSS khusus cetak label & CSS Modul Drone -->
     <link rel="stylesheet" href="label/css/style.css">
+    <link rel="stylesheet" href="drone/css/style.css">
 
     <style>
         body {
@@ -270,6 +275,37 @@ $endRecord   = min($offset + $limit, $totalData);
                         <span>Cetak 2 Kolom</span>
                     </button>
                 </div>
+            <?php elseif ($activeTab === 'drone'): ?>
+                <!-- Actions Preset Manager & Global Export untuk Modul Drone -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex items-center bg-slate-100/80 border border-slate-300/80 rounded-xl px-2.5 py-1.5">
+                        <span class="text-xs text-slate-500 mr-2 font-medium">Preset:</span>
+                        <select id="presetSelect" class="bg-transparent text-xs text-slate-800 font-semibold focus:outline-none max-w-[130px]">
+                            <!-- Dynamic options -->
+                        </select>
+                    </div>
+
+                    <button id="btnLoadPreset" title="Muat Preset" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold rounded-xl shadow-sm transition">Muat</button>
+                    <button id="btnAddPreset" title="Tambah Preset" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">+ Preset</button>
+                    <button id="btnEditPreset" title="Update Preset" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">Update</button>
+                    <button id="btnDownloadPreset" title="Download Preset (.JSON)" class="px-3 py-1.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-xl shadow-sm transition">Export (.JSON)</button>
+
+                    <label class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-xl shadow-sm transition cursor-pointer" title="Upload Preset (.JSON)">
+                        Import (.JSON)
+                        <input type="file" id="presetFileInput" accept=".json" class="hidden">
+                    </label>
+
+                    <button id="btnDeletePreset" class="px-2.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-semibold rounded-xl transition" title="Hapus Preset">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
+
+                    <div class="h-5 w-px bg-slate-300 mx-1"></div>
+
+                    <button id="btnDownloadZip" disabled class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-semibold rounded-xl shadow-md transition flex items-center gap-1.5">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Download ZIP</span>
+                    </button>
+                </div>
             <?php elseif ($activeTab === 'ad_user'): ?>
                 <!-- Domain Status Indicator untuk Active Directory -->
                 <div class="flex items-center gap-3 text-xs bg-slate-100 border border-slate-200/80 rounded-xl px-3 py-1.5">
@@ -284,7 +320,7 @@ $endRecord   = min($offset + $limit, $totalData);
                     </span>
                 </div>
             <?php else: ?>
-                <!-- Action Buttons untuk Tab Database & Tab Drone (Default) -->
+                <!-- Action Buttons untuk Tab Database -->
                 <a href="dashboard.php?tab=generator" class="flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-md shadow-indigo-500/20 transition active:scale-95">
                     <i data-lucide="scissors" class="w-4 h-4"></i>
                     <span>Buat Label Baru</span>
@@ -490,15 +526,222 @@ $endRecord   = min($offset + $limit, $totalData);
             </div>
         <?php endif; ?>
 
-        <!-- KONTEN TAB 3: SISTEM DRONE (KOSONG) -->
+        <!-- KONTEN TAB 3: SISTEM DRONE -->
         <?php if ($activeTab === 'drone'): ?>
             <div class="p-6 max-w-[1600px] w-full mx-auto">
-                <div class="bg-white border border-slate-200/80 rounded-2xl p-12 text-center shadow-sm">
-                    <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mx-auto mb-3">
-                        <i data-lucide="folder-open" class="w-6 h-6"></i>
-                    </div>
-                    <h3 class="text-sm font-bold text-slate-800 mb-1">Tab Kosong</h3>
-                    <p class="text-xs text-slate-500">Isi modul Sistem Watermark Drone telah dikosongkan.</p>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+                    <!-- Left Sidebar Controls -->
+                    <aside class="lg:col-span-4 xl:col-span-3 space-y-4 text-xs no-print">
+
+                        <!-- Upload Zone -->
+                        <div class="bg-white border-2 border-dashed border-indigo-200 hover:border-indigo-500 rounded-2xl p-5 text-center transition duration-200 cursor-pointer relative shadow-sm hover:shadow-md group" id="dropZone">
+                            <input type="file" id="fileInput" multiple accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
+                            <div class="w-12 h-12 bg-indigo-50 group-hover:bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3 transition">
+                                <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+                            </div>
+                            <p class="font-bold text-slate-800 text-xs">Unggah / Seret Foto Drone</p>
+                            <p class="text-[10px] text-slate-400 mt-1">Mendukung pemrosesan banyak foto sekaligus</p>
+                        </div>
+
+                        <!-- Status Progress Upload -->
+                        <div id="uploadStatus" class="hidden bg-white border border-indigo-200 rounded-2xl p-4 text-center space-y-2 shadow-sm">
+                            <div class="flex items-center justify-center space-x-2 text-indigo-600">
+                                <i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>
+                                <span id="uploadStatusText" class="text-xs font-semibold">Memproses 0/0 foto...</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                                <div id="uploadProgressBar" class="bg-indigo-600 h-2 rounded-full transition-all duration-150" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- General View Settings -->
+                        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 space-y-2.5 shadow-sm">
+                            <span class="font-bold text-slate-800 uppercase tracking-wider text-[10px] block mb-1">Tampilan Preview & ZIP</span>
+                            <label class="flex items-center space-x-2 cursor-pointer text-slate-600 hover:text-slate-900 transition">
+                                <input type="checkbox" id="chkShowOriginal" class="rounded border-slate-300 text-indigo-600 focus:ring-0">
+                                <span>Tampilkan Foto Original</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer text-slate-600 hover:text-slate-900 transition">
+                                <input type="checkbox" id="chkIncludeOriginalsZip" checked class="rounded border-slate-300 text-emerald-600 focus:ring-0">
+                                <span>Sertakan Folder <code class="text-xs text-indigo-600 font-semibold font-mono">Originals/</code> di ZIP</span>
+                            </label>
+                        </div>
+
+                        <!-- Text Controls Panel -->
+                        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 space-y-3 shadow-sm">
+                            <span class="font-bold text-slate-800 uppercase tracking-wider text-[10px] block">Template Teks Watermark</span>
+                            <div>
+                                <input type="text" id="txtTemplate" value="[DATE] - [TIME] WIT" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800 text-xs font-mono focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none">
+                                <p class="text-[10px] text-slate-400 mt-1 font-mono">Variabel: <code class="text-indigo-600">[DATE]</code>, <code class="text-indigo-600">[TIME]</code>, <code class="text-indigo-600">[FILENAME]</code></p>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-slate-500 mb-1 font-medium">Font Family</label>
+                                    <select id="fontFamily" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800">
+                                        <option value="Arial">Arial</option>
+                                        <option value="Impact">Impact</option>
+                                        <option value="Trebuchet MS">Trebuchet MS</option>
+                                        <option value="Verdana">Verdana</option>
+                                        <option value="Courier New">Courier New</option>
+                                        <option value="Times New Roman">Times New Roman</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-slate-500 mb-1 font-medium">Ukuran Base</label>
+                                    <input type="number" id="fontSize" value="38" min="10" max="200" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 items-center">
+                                <div>
+                                    <label class="block text-slate-500 mb-1 font-medium">Warna Teks</label>
+                                    <input type="color" id="textColor" value="#ffffff" class="w-full h-8 bg-slate-50 border border-slate-200 rounded-xl p-0.5 cursor-pointer">
+                                </div>
+                                <div>
+                                    <label class="block text-slate-500 mb-1 font-medium">Gaya Teks</label>
+                                    <div class="flex gap-3 pt-1">
+                                        <label class="flex items-center space-x-1 cursor-pointer font-bold text-slate-700">
+                                            <input type="checkbox" id="chkBold" checked class="rounded border-slate-300 text-indigo-600">
+                                            <span>B</span>
+                                        </label>
+                                        <label class="flex items-center space-x-1 cursor-pointer italic text-slate-700">
+                                            <input type="checkbox" id="chkItalic" class="rounded border-slate-300 text-indigo-600">
+                                            <span>I</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-slate-500 mb-1">
+                                    <span class="font-medium">Opacity Teks</span>
+                                    <span id="lblTextOpacity" class="font-bold text-slate-700">100%</span>
+                                </div>
+                                <input type="range" id="textOpacity" min="0" max="100" value="100" class="w-full accent-indigo-600">
+                            </div>
+                        </div>
+
+                        <!-- Outline Panel -->
+                        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 space-y-3 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-slate-800 uppercase tracking-wider text-[10px]">Outline (Garis Tepi)</span>
+                                <label class="flex items-center space-x-1 cursor-pointer text-slate-600">
+                                    <input type="checkbox" id="chkApplyOutline" checked class="rounded border-slate-300 text-indigo-600">
+                                    <span>Aktif</span>
+                                </label>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 items-center">
+                                <div>
+                                    <label class="block text-slate-500 mb-1">Warna Outline</label>
+                                    <input type="color" id="outlineColor" value="#000000" class="w-full h-8 bg-slate-50 border border-slate-200 rounded-xl p-0.5 cursor-pointer">
+                                </div>
+                                <div>
+                                    <label class="block text-slate-500 mb-1">Ketebalan</label>
+                                    <input type="number" id="outlineThickness" min="1" max="36" value="6" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800">
+                                </div>
+                            </div>
+
+                            <div class="space-y-1 text-slate-600">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="radio" name="outlineMode" value="both" checked class="text-indigo-600 border-slate-300">
+                                    <span>Outline + Teks Utama</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="radio" name="outlineMode" value="outlineOnly" class="text-indigo-600 border-slate-300">
+                                    <span>Hanya Outline (Transparan)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Shadow Panel -->
+                        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 space-y-3 shadow-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-slate-800 uppercase tracking-wider text-[10px]">Bayangan (Shadow)</span>
+                                <label class="flex items-center space-x-1 cursor-pointer text-slate-600">
+                                    <input type="checkbox" id="chkApplyShadow" checked class="rounded border-slate-300 text-indigo-600">
+                                    <span>Aktif</span>
+                                </label>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2 items-center">
+                                <div>
+                                    <label class="block text-slate-500 mb-1">Warna Shadow</label>
+                                    <input type="color" id="shadowColor" value="#000000" class="w-full h-8 bg-slate-50 border border-slate-200 rounded-xl p-0.5 cursor-pointer">
+                                </div>
+                                <div>
+                                    <label class="block text-slate-500 mb-1">Blur Radius</label>
+                                    <input type="number" id="shadowBlur" min="0" max="10" value="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800">
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-slate-500 mb-1">
+                                    <span>Opacity Shadow</span>
+                                    <span id="lblShadowOpacity" class="font-bold text-slate-700">35%</span>
+                                </div>
+                                <input type="range" id="shadowOpacity" min="0" max="100" value="35" class="w-full accent-indigo-600">
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-slate-500 mb-1">Offset X</label>
+                                    <input type="number" id="shadowX" value="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800">
+                                </div>
+                                <div>
+                                    <label class="block text-slate-500 mb-1">Offset Y</label>
+                                    <input type="number" id="shadowY" value="2" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Anchor Position -->
+                        <div class="bg-white border border-slate-200/80 rounded-2xl p-4 space-y-3 shadow-sm">
+                            <span class="font-bold text-slate-800 uppercase tracking-wider text-[10px] block">Posisi Watermark (Anchor)</span>
+                            <div>
+                                <select id="anchorPosition" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-800">
+                                    <option value="bottom-right" selected>Kanan Bawah (Bottom Right)</option>
+                                    <option value="bottom-left">Kiri Bawah (Bottom Left)</option>
+                                    <option value="bottom-center">Tengah Bawah (Bottom Center)</option>
+                                    <option value="top-right">Kanan Atas (Top Right)</option>
+                                    <option value="top-left">Kiri Atas (Top Left)</option>
+                                    <option value="center">Tengah (Center)</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-slate-500 mb-1">Margin X</label>
+                                    <input type="number" id="offsetX" value="-30" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800">
+                                </div>
+                                <div>
+                                    <label class="block text-slate-500 mb-1">Margin Y</label>
+                                    <input type="number" id="offsetY" value="-25" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800">
+                                </div>
+                            </div>
+                        </div>
+
+                    </aside>
+
+                    <!-- Right Workspace / Image Preview Grid -->
+                    <main class="lg:col-span-8 xl:col-span-9">
+                        <!-- Empty State -->
+                        <div id="emptyState" class="bg-white rounded-2xl border border-slate-200/80 p-12 text-center flex flex-col items-center justify-center min-h-[500px] shadow-sm">
+                            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4">
+                                <i data-lucide="image" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-base font-bold text-slate-800">Belum Ada Foto Drone Terpilih</h3>
+                            <p class="text-xs text-slate-500 max-w-sm mt-1">Unggah atau seret file foto dari panel sebelah kiri untuk mulai melakukan konversi crop 16:9 & penambahan watermark.</p>
+                        </div>
+
+                        <!-- Image List Container -->
+                        <div id="imageListContainer" class="space-y-4 hidden">
+                            <!-- Rendered dynamically by drone script -->
+                        </div>
+                    </main>
+
                 </div>
             </div>
         <?php endif; ?>
@@ -990,13 +1233,18 @@ $endRecord   = min($offset + $limit, $totalData);
             });
 
             document.getElementById(`content-${tabName}`).classList.remove("hidden");
-            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn = document.getElementById(`tab-${tabName}`);
             activeBtn.className = "ad-tab-btn px-6 py-3.5 text-xs font-semibold border-b-2 border-indigo-600 text-indigo-600 flex items-center gap-2 whitespace-nowrap";
         }
     </script>
 
     <!-- Script JS Utama Label -->
     <script src="label/js/script.js"></script>
+
+    <?php if ($activeTab === 'drone'): ?>
+        <!-- Script JS Khusus Sistem Drone -->
+        <script src="drone/js/script.js"></script>
+    <?php endif; ?>
 </body>
 
 </html>
