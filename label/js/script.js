@@ -293,7 +293,7 @@ function renderCards() {
                             </div>
                         </div>
                         <div class="asset-value">
-                          <input type="text" class="asset-input-direct" value="${escapeHtml(card.waktuPenggunaan)}" oninput="updateCardData(${card.id}, 'waktuPenggunaan', this.value)" placeholder="YYYY-MM-DD" required>
+                        <input type="date" class="asset-input-direct" value="${escapeHtml(card.waktuPenggunaan)}" oninput="updateCardData(${card.id}, 'waktuPenggunaan', this.value)" placeholder="Waktu Penggunaan..." required>
                         </div>
                 </div>
             </div>
