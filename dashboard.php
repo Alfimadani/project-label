@@ -82,7 +82,7 @@ $endRecord   = min($offset + $limit, $totalData);
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
     <!-- CSS khusus cetak label & CSS Modul Drone -->
-    <link rel="stylesheet" href="label/css/style.css">
+    <link rel="stylesheet" href="label/css/style.css?v=<?= time(); ?>">
     <link rel="stylesheet" href="drone/css/style.css">
 
     <style>
@@ -1239,7 +1239,7 @@ $endRecord   = min($offset + $limit, $totalData);
     </script>
 
     <!-- Script JS Utama Label -->
-    <script src="label/js/script.js"></script>
+    <script src="label/js/script.js?v=<?= time(); ?>"></script>
 
     <?php if ($activeTab === 'drone'): ?>
         <!-- Script JS Khusus Sistem Drone -->
