@@ -1,6 +1,72 @@
 const STORAGE_KEY = "IT_ASSET_LABELS_DATA_V3";
 let saveTimeout = null;
 
+// ============================================
+// AUTO-RESIZE FONT UNTUK INPUT LABEL (CANVAS METHOD)
+// ============================================
+const FONT_MAX = 8; // px - ukuran maksimal
+const FONT_MIN = 1; // px - ukuran minimal
+const FONT_STEP = 0.1; // px - langkah pengecilan (lebih halus)
+
+// Buat canvas global untuk mengukur teks
+const canvas = document.createElement("canvas");
+const ctx = canvas.getContext("2d");
+
+/**
+ * Sesuaikan ukuran font satu input agar teks muat.
+ */
+function autoResizeInput(input) {
+  if (!input) return;
+
+  const text = input.value;
+  if (!text) {
+    input.style.fontSize = FONT_MAX + "px";
+    return;
+  }
+
+  // Ambil font family & weight dari input
+  const computedStyle = window.getComputedStyle(input);
+  const fontFamily = computedStyle.fontFamily || "sans-serif";
+  const fontWeight = computedStyle.fontWeight || "700";
+
+  // Hitung lebar maksimal yang tersedia di dalam input.
+  // clientWidth dikurangi padding kiri-kanan input (biasanya 8px dari CSS)
+  const availableWidth = input.clientWidth - 8;
+
+  if (availableWidth <= 0) return; // Menghindari error saat elemen tersembunyi
+
+  let size = FONT_MAX;
+  let isFit = false;
+
+  // Loop dari ukuran maksimal turun ke minimal
+  while (size >= FONT_MIN) {
+    // Set font di canvas untuk diukur
+    ctx.font = `${fontWeight} ${size}px ${fontFamily}`;
+    const textWidth = ctx.measureText(text).width;
+
+    // Jika teks muat, hentikan loop
+    if (textWidth <= availableWidth) {
+      isFit = true;
+      break;
+    }
+    size -= FONT_STEP;
+  }
+
+  // Terapkan ukuran font terakhir (jika tidak muat sampai minimal, pakai FONT_MIN)
+  const finalSize = isFit ? size : FONT_MIN;
+
+  // Bulatkan ke 1 desimal agar tidak terlalu banyak digit (contoh: 6.2px)
+  input.style.fontSize = parseFloat(finalSize.toFixed(1)) + "px";
+}
+
+/**
+ * Auto-resize semua input dalam container.
+ */
+function autoResizeAllInputs(container = document) {
+  const inputs = container.querySelectorAll(".asset-input-direct");
+  inputs.forEach((input) => autoResizeInput(input));
+}
+
 // Data Default Awal (2 Data Sampel Presisi Sesuai Gambar)
 const defaultSampleData = [
   {
@@ -227,13 +293,19 @@ function renderCards() {
                             </div>
                         </div>
                         <div class="asset-value">
-                            <input type="date" class="asset-input-direct" value="${escapeHtml(card.waktuPenggunaan)}" oninput="updateCardData(${card.id}, 'waktuPenggunaan', this.value)" placeholder="Waktu Penggunaan..." required>
+                          <input type="text" class="asset-input-direct" value="${escapeHtml(card.waktuPenggunaan)}" oninput="updateCardData(${card.id}, 'waktuPenggunaan', this.value)" placeholder="YYYY-MM-DD" required>
                         </div>
-                    </div>
                 </div>
             </div>
         `;
     container.appendChild(cutBox);
+
+    // 🔥 AUTO-RESIZE: jalankan setelah kartu ditambahkan ke DOM
+    // Gunakan requestAnimationFrame agar layout sudah settle
+    requestAnimationFrame(() => {
+      const inputs = cutBox.querySelectorAll(".asset-input-direct");
+      inputs.forEach((input) => autoResizeInput(input));
+    });
   });
 
   const countElem = document.getElementById("cardCount");
@@ -247,11 +319,18 @@ function renderCards() {
 }
 
 // Update nilai input
+// Update nilai input
 function updateCardData(id, field, value) {
   const card = cards.find((c) => c.id === id);
   if (card) {
     card[field] = value;
     saveCardsToStorage();
+
+    // 🔥 AUTO-RESIZE: sesuaikan font input yang sedang diketik
+    const activeInput = document.activeElement;
+    if (activeInput && activeInput.classList.contains("asset-input-direct")) {
+      autoResizeInput(activeInput);
+    }
   }
 }
 
@@ -380,9 +459,20 @@ function escapeHtml(str) {
 }
 
 // Inisialisasi saat halaman dimuat
+// Inisialisasi saat halaman dimuat
 window.onload = function () {
   loadSavedCards();
   renderCards();
+
+  // 🔥 AUTO-RESIZE: pasang listener global untuk semua input label
+  document.addEventListener("input", function (e) {
+    if (e.target.classList.contains("asset-input-direct")) {
+      autoResizeInput(e.target);
+    }
+  });
+
+  // Auto-resize setelah render awal (termasuk data dari localStorage)
+  setTimeout(() => autoResizeAllInputs(), 100);
 };
 
 function saveToDatabase() {
