@@ -193,7 +193,7 @@
         <div class="p-6">
           <div id="content-general" class="tab-content space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="bg-slate-900/80 p-4 rounded-lg border border-slate-800">
+              <div class="md:col-span-2 bg-slate-900/80 p-4 rounded-lg border border-slate-800">
                 <span class="text-xs text-slate-500 font-medium uppercase tracking-wider block mb-1">Distinguished Name (DN)</span>
                 <span class="text-xs code-font text-brand-300 break-all select-all" id="distinguishedName">-</span>
               </div>
@@ -212,10 +212,6 @@
               <div class="bg-slate-900/80 p-4 rounded-lg border border-slate-800">
                 <span class="text-xs text-slate-500 font-medium uppercase tracking-wider block mb-1">Account Created Date</span>
                 <span class="text-sm code-font text-slate-200" id="whenCreated">-</span>
-              </div>
-              <div class="bg-slate-900/80 p-4 rounded-lg border border-slate-800">
-                <span class="text-xs text-slate-500 font-medium uppercase tracking-wider block mb-1">User Account Control (UAC)</span>
-                <span class="text-sm code-font text-slate-200" id="userAccountControl">-</span>
               </div>
             </div>
           </div>
@@ -369,7 +365,6 @@
         Enabled: isEnabled,
         DistinguishedName: data.distinguishedname || "-",
         UserPrincipalName: data.userprincipalname || "-",
-        UserAccountControl: data.useraccountcontrol || "-",
         PasswordLastSet: data.pwdlastset_formatted || data.pwdlastset || "-",
         WhenCreated: data.whencreated || "-",
         LastLogonDate: data.lastlogon_formatted || data.lastlogon || "-",
@@ -410,7 +405,6 @@
       document.getElementById("generalPhone").innerText = formattedUser.TelephoneNumber;
       document.getElementById("pwdLastSet").innerText = formattedUser.PasswordLastSet;
       document.getElementById("whenCreated").innerText = formattedUser.WhenCreated;
-      document.getElementById("userAccountControl").innerText = formattedUser.UserAccountControl;
 
       const groupList = document.getElementById("groupList");
       document.getElementById("groupCount").innerText = formattedUser.MemberOf.length;

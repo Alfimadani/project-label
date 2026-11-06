@@ -893,7 +893,7 @@ $endRecord   = min($offset + $limit, $totalData);
                             <!-- Tab 1: General Info -->
                             <div id="content-general" class="ad-tab-content space-y-4">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+                                    <div class="md:col-span-2 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                                         <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Distinguished Name (DN)</span>
                                         <span class="text-xs code-font text-indigo-600 break-all select-all font-semibold" id="distinguishedName">-</span>
                                     </div>
@@ -912,10 +912,6 @@ $endRecord   = min($offset + $limit, $totalData);
                                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
                                         <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">Account Created Date</span>
                                         <span class="text-xs code-font text-slate-800 font-medium" id="whenCreated">-</span>
-                                    </div>
-                                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200/80">
-                                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block mb-1">User Account Control (UAC)</span>
-                                        <span class="text-xs code-font text-slate-800 font-medium" id="userAccountControl">-</span>
                                     </div>
                                 </div>
                             </div>
@@ -1142,7 +1138,6 @@ $endRecord   = min($offset + $limit, $totalData);
                 Enabled: isEnabled,
                 DistinguishedName: data.distinguishedname || "-",
                 UserPrincipalName: data.userprincipalname || "-",
-                UserAccountControl: data.useraccountcontrol || "-",
                 PasswordLastSet: data.pwdlastset_formatted || data.pwdlastset || "-",
                 WhenCreated: data.whencreated || "-",
                 LastLogonDate: data.lastlogon_formatted || data.lastlogon || "-",
@@ -1183,7 +1178,6 @@ $endRecord   = min($offset + $limit, $totalData);
             document.getElementById("generalPhone").innerText = formattedUser.TelephoneNumber;
             document.getElementById("pwdLastSet").innerText = formattedUser.PasswordLastSet;
             document.getElementById("whenCreated").innerText = formattedUser.WhenCreated;
-            document.getElementById("userAccountControl").innerText = formattedUser.UserAccountControl;
 
             const groupList = document.getElementById("groupList");
             document.getElementById("groupCount").innerText = formattedUser.MemberOf.length;
