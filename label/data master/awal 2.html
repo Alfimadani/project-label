@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="id" class="light scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cetak Stiker Label Aset IT - Standalone</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      body {
+        font-family: "Plus Jakarta Sans", "Inter", "Noto Sans SC", sans-serif;
+        background-color: #f1f5f9;
+        color: #334155;
+      }
+
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        box-shadow: 0 10px 35px -5px rgba(15, 23, 42, 0.04);
+      }
+
+      /* ============================================
+           CSS KHUSUS CETAK STIKER LABEL
+           ============================================ */
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 28px;
+        justify-items: center;
+      }
+
+      /* Area Garis Putus-Putus Pembatas Gunting */
+      .cut-box {
+        position: relative;
+        padding: 12px;
+        border: 2px dashed #64748b;
+        border-radius: 12px;
+        background-color: #ffffff;
+        box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.08);
+        page-break-inside: avoid;
+        break-inside: avoid;
+        transition: all 0.2s ease;
+      }
+
+      /* Indikator Gunting di Luar Kartu */
+      .cut-indicator {
+        position: absolute;
+        top: -11px;
+        left: 14px;
+        background-color: #ffffff;
+        padding: 0 6px;
+        font-size: 10px;
+        color: #475569;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        z-index: 10;
+        border-radius: 4px;
+      }
+
+      /* Dimensi Presisi Label: 2.90 in x 1.83 in */
+      .asset-card {
+        width: 2.9in;
+        height: 1.83in;
+        box-sizing: border-box;
+        background: #ffffff;
+        border-radius: 8px;
+        border: 2px solid #4b5563;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      /* Header Metallic Silver */
+      .asset-header {
+        background: linear-gradient(
+          135deg,
+          #374151 0%,
+          #6b7280 50%,
+          #1f2937 100%
+        );
+        color: #ffffff;
+        height: 0.38in;
+        display: flex;
+        align-items: center;
+        padding: 0 4px;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+        border-bottom: 1px solid #374151;
+        position: relative;
+      }
+
+      .asset-header::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 30%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.25),
+          rgba(255, 255, 255, 0)
+        );
+        pointer-events: none;
+      }
+
+      /* Table Internal Rounded Corners */
+      .asset-table {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 1.45in;
+        border-collapse: separate;
+        border-spacing: 0;
+        background-color: #ffffff;
+      }
+
+      .asset-row {
+        display: flex;
+        border-bottom: 1px solid #6b7280;
+        height: calc(1.45in / 6);
+        align-items: center;
+        box-sizing: border-box;
+      }
+
+      .asset-row:last-child {
+        border-bottom: none;
+      }
+
+      .asset-row:last-child .asset-label {
+        border-bottom-left-radius: 6px;
+      }
+
+      .asset-row:last-child .asset-value {
+        border-bottom-right-radius: 6px;
+      }
+
+      .asset-label {
+        width: 42%;
+        height: 100%;
+        border-right: 1px solid #6b7280;
+        display: flex;
+        align-items: center;
+        padding: 0 3px;
+        background-color: #f1f5f9;
+        box-sizing: border-box;
+      }
+
+      .asset-value {
+        width: 58%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        padding: 0 4px;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+
+      .asset-input-direct {
+        width: 100%;
+        height: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 8px;
+        line-height: 1;
+        box-sizing: border-box;
+        padding: 0 4px;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: clip;
+        transition: font-size 0.05s ease-out;
+      }
+
+      .asset-input-direct:focus {
+        background-color: #e2e8f0;
+        border-radius: 2px;
+      }
+
+      /* Pengaturan Media Cetak / Print Presisi */
+      @media print {
+        body {
+          background-color: #ffffff !important;
+          padding: 0 !important;
+          margin: 0 !important;
+        }
+
+        .no-print {
+          display: none !important;
+        }
+
+        .print-wrapper {
+          padding: 0 !important;
+          margin: 0 !important;
+          max-width: 100% !important;
+          display: block !important;
+        }
+
+        .print-box-wrapper {
+          border: none !important;
+          box-shadow: none !important;
+          padding: 0 !important;
+          background: transparent !important;
+        }
+
+        .print-container {
+          display: grid !important;
+          grid-template-columns: repeat(2, auto) !important;
+          gap: 0.25in !important;
+          width: 100% !important;
+          padding: 0.2in !important;
+          margin: 0 !important;
+        }
+
+        .cut-box {
+          border: 2px dashed #334155 !important;
+          padding: 12px !important;
+          box-shadow: none !important;
+          border-radius: 10px !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          break-inside: avoid !important;
+          page-break-inside: avoid !important;
+        }
+
+        .cut-indicator {
+          color: #334155 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        .asset-card {
+          width: 2.9in !important;
+          height: 1.83in !important;
+          margin: 0 !important;
+          box-shadow: none !important;
+          border: 2px solid #4b5563 !important;
+          border-radius: 8px !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        .asset-header {
+          background: linear-gradient(
+            135deg,
+            #374151 0%,
+            #6b7280 50%,
+            #1f2937 100%
+          ) !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        .asset-label {
+          background-color: #f1f5f9 !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        @page {
+          size: A4 portrait;
+          margin: 5mm;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .cards-grid {
+          grid-template-columns: repeat(1, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+
+  <body
+    class="antialiased text-slate-700 min-h-screen flex flex-col bg-slate-100"
+  >
+    <!-- HEADER TOPBAR -->
+    <header
+      class="sticky top-0 z-30 glass-panel border-b border-slate-200/80 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 no-print"
+    >
+      <div class="flex items-center gap-3">
+        <div
+          class="flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 via-indigo-600 to-violet-600 text-white shadow-md shadow-indigo-500/20"
+        >
+          <i data-lucide="scissors" class="w-4 h-4"></i>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <h1
+            class="text-sm md:text-base font-bold text-slate-800 tracking-tight"
+          >
+            Pembuat Stiker Label Aset IT
+          </h1>
+          <span
+            class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-200/80 text-indigo-700 font-medium"
+          >
+            Standard 2.90" × 1.83"
+          </span>
+        </div>
+      </div>
+
+      <!-- Action Buttons untuk Stiker Label -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <div
+          id="saveBadge"
+          class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[10px] font-semibold px-2.5 py-1 rounded-full"
+        >
+          <span
+            class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
+          ></span>
+          <span id="saveStatusText">Tersimpan Otomatis</span>
+        </div>
+
+        <button
+          onclick="saveToDatabase()"
+          class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition shadow-md shadow-emerald-600/10 active:scale-95"
+        >
+          <i data-lucide="save" class="w-4 h-4"></i>
+          <span>Simpan DB</span>
+        </button>
+
+        <button
+          onclick="addNewCard()"
+          class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl text-xs font-medium transition shadow-md active:scale-95"
+        >
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Tambah Label</span>
+        </button>
+
+        <button
+          onclick="window.print()"
+          class="flex items-center gap-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-md shadow-indigo-500/20 transition active:scale-95"
+        >
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          <span>Cetak 2 Kolom</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- KONTEN UTAMA: CETAK STIKER LABEL -->
+    <main
+      class="p-6 max-w-[1600px] w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 print-wrapper"
+    >
+      <!-- Sidebar Kontrol Label (Kiri) -->
+      <aside class="lg:col-span-3 no-print space-y-4">
+        <div
+          class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4"
+        >
+          <h2
+            class="text-xs font-bold uppercase tracking-wider text-slate-800 mb-3 flex items-center gap-2"
+          >
+            <i data-lucide="sliders" class="w-4 h-4 text-indigo-600"></i>
+            <span>Pengaturan Stiker Silver</span>
+          </h2>
+
+          <div
+            class="space-y-2 text-[11px] text-slate-600 bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80 mb-4 font-mono"
+          >
+            <div
+              class="flex justify-between border-b border-slate-200/60 pb-1.5"
+            >
+              <span class="text-slate-400">Tipe Silver:</span>
+              <strong class="text-slate-800">Metallic Matte</strong>
+            </div>
+            <div
+              class="flex justify-between border-b border-slate-200/60 pb-1.5"
+            >
+              <span class="text-slate-400">Chinese Header:</span>
+              <strong class="text-slate-800">使用部门 / 和位置</strong>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-400">Dimensi Stiker:</span>
+              <strong class="text-slate-800">2.90" × 1.83"</strong>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <button
+              onclick="fillSampleData()"
+              class="w-full text-left px-3.5 py-2.5 bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 font-semibold rounded-xl text-xs transition flex items-center justify-between group"
+            >
+              <span>Muat Contoh Data</span>
+              <i
+                data-lucide="sparkles"
+                class="w-4 h-4 text-slate-400 group-hover:text-indigo-600"
+              ></i>
+            </button>
+
+            <button
+              onclick="confirmClearAllCards()"
+              class="w-full text-left px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold rounded-xl text-xs transition flex items-center justify-between"
+            >
+              <span>Reset Semua Label</span>
+              <i data-lucide="trash-2" class="w-4 h-4 text-rose-500"></i>
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Live Preview Container (Kanan) -->
+      <section class="lg:col-span-9">
+        <div
+          class="bg-white rounded-2xl p-5 border border-slate-200/80 min-h-[550px] shadow-sm print-box-wrapper"
+        >
+          <div
+            class="flex justify-between items-center mb-4 no-print border-b border-slate-100 pb-3"
+          >
+            <span
+              class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2"
+            >
+              <i data-lucide="layout-grid" class="w-4 h-4 text-indigo-600"></i>
+              Live Preview Cetak (Format 2 Kolom)
+            </span>
+            <span
+              id="cardCount"
+              class="text-xs font-semibold bg-slate-100 px-3 py-1 rounded-full text-slate-700 border border-slate-200"
+            >
+              0 Label
+            </span>
+          </div>
+
+          <!-- Container Kartu Label -->
+          <div id="cardsContainer" class="print-container cards-grid">
+            <!-- Kartu akan di-render oleh JavaScript -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal Konfirmasi Reset -->
+    <div
+      id="clearModal"
+      class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden no-print"
+    >
+      <div
+        class="bg-white rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl text-center border border-slate-100"
+      >
+        <div
+          class="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto mb-3"
+        >
+          <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800 mb-1">
+          Reset Semua Label?
+        </h3>
+        <p class="text-xs text-slate-500 mb-6">
+          Semua label yang telah diketik akan direset ke kondisi awal.
+        </p>
+        <div class="flex gap-3">
+          <button
+            onclick="closeModal()"
+            class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl transition"
+          >
+            Batal
+          </button>
+          <button
+            onclick="executeClearAllCards()"
+            class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-xl shadow-md transition"
+          >
+            Ya, Reset
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const STORAGE_KEY = "IT_ASSET_LABELS_DATA_V3";
+      let saveTimeout = null;
+
+      // ============================================
+      // AUTO-RESIZE FONT UNTUK INPUT LABEL (CANVAS METHOD)
+      // ============================================
+      const FONT_MAX = 8; // px - ukuran maksimal
+      const FONT_MIN = 1; // px - ukuran minimal
+      const FONT_STEP = 0.1; // px - langkah pengecilan
+
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      function autoResizeInput(input) {
+        if (!input) return;
+
+        const text = input.value;
+        if (!text) {
+          input.style.fontSize = FONT_MAX + "px";
+          return;
+        }
+
+        const computedStyle = window.getComputedStyle(input);
+        const fontFamily = computedStyle.fontFamily || "sans-serif";
+        const fontWeight = computedStyle.fontWeight || "700";
+
+        const availableWidth = input.clientWidth - 8;
+        if (availableWidth <= 0) return;
+
+        let size = FONT_MAX;
+        let isFit = false;
+
+        while (size >= FONT_MIN) {
+          ctx.font = `${fontWeight} ${size}px ${fontFamily}`;
+          const textWidth = ctx.measureText(text).width;
+
+          if (textWidth <= availableWidth) {
+            isFit = true;
+            break;
+          }
+          size -= FONT_STEP;
+        }
+
+        const finalSize = isFit ? size : FONT_MIN;
+        input.style.fontSize = parseFloat(finalSize.toFixed(1)) + "px";
+      }
+
+      function autoResizeAllInputs(container = document) {
+        const inputs = container.querySelectorAll(".asset-input-direct");
+        inputs.forEach((input) => autoResizeInput(input));
+      }
+
+      // Data Default Awal (2 Data Sampel)
+      const defaultSampleData = [
+        {
+          id: 1,
+          noAset: "50295-IT-BAST-KPS-09-2026",
+          namaAset: "PC DELL INSPIRON 3030 i5",
+          spesifikasi: "CPU 3CWCDF4 | MON G50KR94",
+          pengguna: "TASRIK S. ALI | S0925001907",
+          deptLokasi: "KPS-DISPATCH 运输部",
+          waktuPenggunaan: "2026-09-21",
+        },
+        {
+          id: 2,
+          noAset: "50292-IT-BAST-KPS-09-2026",
+          namaAset: "PC DELL TOWER ECT1250",
+          spesifikasi: "CPU 3727XC4 | MON BFNCS94",
+          pengguna: "WINDA VERONIKA BENAWAN",
+          deptLokasi: "KPS-PRODUKSI - MO P8 R 213",
+          waktuPenggunaan: "2026-09-20",
+        },
+      ];
+
+      let cards = [];
+
+      function formatToYYYYMMDD(dateStr) {
+        if (!dateStr) return getFormattedToday();
+
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+          return dateStr;
+        }
+
+        if (dateStr.includes("/")) {
+          const parts = dateStr.split("/");
+          if (parts.length === 3) {
+            return `${parts[2]}-${parts[1].padStart(2, "0")}-${parts[0].padStart(2, "0")}`;
+          }
+        }
+
+        return dateStr;
+      }
+
+      function loadSavedCards() {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              cards = parsed.map((card) => ({
+                ...card,
+                waktuPenggunaan: formatToYYYYMMDD(card.waktuPenggunaan),
+              }));
+              return;
+            }
+          }
+        } catch (e) {
+          console.error("Gagal memuat data dari LocalStorage:", e);
+        }
+        cards = JSON.parse(JSON.stringify(defaultSampleData));
+      }
+
+      function saveCardsToStorage() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+          showSaveNotification();
+        } catch (e) {
+          console.error("Gagal menyimpan data ke LocalStorage:", e);
+        }
+      }
+
+      function showSaveNotification() {
+        const badge = document.getElementById("saveBadge");
+        const statusText = document.getElementById("saveStatusText");
+        if (!badge || !statusText) return;
+
+        statusText.textContent = "Menyimpan...";
+        badge.className =
+          "inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200/80 text-[10px] font-semibold px-2.5 py-1 rounded-full transition-all duration-300";
+
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+          statusText.textContent = "Tersimpan Otomatis";
+          badge.className =
+            "inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[10px] font-semibold px-2.5 py-1 rounded-full transition-all duration-300";
+        }, 500);
+      }
+
+      function renderCards() {
+        const container = document.getElementById("cardsContainer");
+        if (!container) return;
+        container.innerHTML = "";
+
+        cards.forEach((card) => {
+          const cutBox = document.createElement("div");
+          cutBox.className = "cut-box group";
+          cutBox.innerHTML = `
+                    <div class="cut-indicator">
+                        <svg class="w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="6" cy="6" r="3"></circle>
+                            <circle cx="6" cy="18" r="3"></circle>
+                            <line x1="20" y1="4" x2="8.12" y2="15.88"></line>
+                            <line x1="14.47" y1="14.48" x2="20" y2="20"></line>
+                            <line x1="8.12" y1="8.12" x2="12" y2="12"></line>
+                        </svg>
+                        <span class="text-[8.5px] font-sans tracking-wide">GARIS POTONG / GUNTING</span>
+                    </div>
+
+                    <div class="asset-card">
+                        <div class="asset-header">
+                            <div class="w-5 flex justify-center items-center z-10">
+                                <svg class="w-4 h-4 text-slate-100 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                    <line x1="8" y1="21" x2="16" y2="21"></line>
+                                    <line x1="12" y1="17" x2="12" y2="21"></line>
+                                </svg>
+                            </div>
+                            <div class="flex-1 text-center pr-2 z-10">
+                                <div class="text-[11px] font-black tracking-wider leading-none text-white drop-shadow-sm" style="font-family: 'Noto Sans SC', sans-serif;">
+                                    固定资产标识卡
+                                </div>
+                                <div class="text-[6.5px] font-extrabold tracking-widest text-slate-200 mt-0.5 uppercase">
+                                    ASSET IT
+                                </div>
+                            </div>
+                            <button onclick="deleteCard(${card.id})" class="no-print opacity-0 group-hover:opacity-100 bg-rose-600 text-white p-0.5 rounded hover:bg-rose-700 transition shadow z-10" title="Hapus Label">
+                                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </div>
+
+                        <div class="asset-table">
+                            <!-- Row 1 -->
+                            <div class="asset-row">
+                                <div class="asset-label">
+                                    <div class="w-3.5 flex justify-center mr-0.5 text-slate-700">
+                                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                                    </div>
+                                    <div class="leading-none">
+                                        <div class="text-[6.5px] font-bold text-slate-800" style="font-family: 'Noto Sans SC', sans-serif;">资产编号</div>
+                                        <div class="text-[5px] font-semibold text-slate-600 uppercase">No. Aset</div>
+                                    </div>
+                                </div>
+                                <div class="asset-value">
+                                    <input type="text" class="asset-input-direct" value="${escapeHtml(card.noAset)}" oninput="updateCardData(${card.id}, 'noAset', this.value)" placeholder="No. Aset..." required>
+                                </div>
+                            </div>
+
+                            <!-- Row 2 -->
+                            <div class="asset-row">
+                                <div class="asset-label">
+                                    <div class="w-3.5 flex justify-center mr-0.5 text-slate-700">
+                                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+                                    </div>
+                                    <div class="leading-none">
+                                        <div class="text-[6.5px] font-bold text-slate-800" style="font-family: 'Noto Sans SC', sans-serif;">资产名称</div>
+                                        <div class="text-[5px] font-semibold text-slate-600 uppercase">Nama Aset</div>
+                                    </div>
+                                </div>
+                                <div class="asset-value">
+                                    <input type="text" class="asset-input-direct" value="${escapeHtml(card.namaAset)}" oninput="updateCardData(${card.id}, 'namaAset', this.value)" placeholder="Nama Aset..." required>
+                                </div>
+                            </div>
+
+                            <!-- Row 3 -->
+                            <div class="asset-row">
+                                <div class="asset-label">
+                                    <div class="w-3.5 flex justify-center mr-0.5 text-slate-700">
+                                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                                    </div>
+                                    <div class="leading-none">
+                                        <div class="text-[6.5px] font-bold text-slate-800" style="font-family: 'Noto Sans SC', sans-serif;">规格型号</div>
+                                        <div class="text-[4.5px] font-semibold text-slate-600 uppercase">Spesifikasi/Tipe</div>
+                                    </div>
+                                </div>
+                                <div class="asset-value">
+                                    <input type="text" class="asset-input-direct" value="${escapeHtml(card.spesifikasi)}" oninput="updateCardData(${card.id}, 'spesifikasi', this.value)" placeholder="Spesifikasi / Tipe..." required>
+                                </div>
+                            </div>
+
+                            <!-- Row 4 -->
+                            <div class="asset-row">
+                                <div class="asset-label">
+                                    <div class="w-3.5 flex justify-center mr-0.5 text-slate-700">
+                                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                                    </div>
+                                    <div class="leading-none">
+                                        <div class="text-[6.5px] font-bold text-slate-800" style="font-family: 'Noto Sans SC', sans-serif;">使用人</div>
+                                        <div class="text-[5px] font-semibold text-slate-600 uppercase">Pengguna</div>
+                                    </div>
+                                </div>
+                                <div class="asset-value">
+                                    <input type="text" class="asset-input-direct" value="${escapeHtml(card.pengguna)}" oninput="updateCardData(${card.id}, 'pengguna', this.value)" placeholder="Pengguna..." required>
+                                </div>
+                            </div>
+
+                            <!-- Row 5 -->
+                            <div class="asset-row">
+                                <div class="asset-label">
+                                    <div class="w-3.5 flex justify-center mr-0.5 text-slate-700">
+                                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v14"></path><path d="M2 20h20"></path><circle cx="14" cy="12" r="1"></circle></svg>
+                                    </div>
+                                    <div class="leading-none">
+                                        <div class="text-[6px] font-extrabold text-slate-800 leading-tight whitespace-nowrap" style="font-family: 'Noto Sans SC', sans-serif;">使用部门 / 和位置</div>
+                                        <div class="text-[4px] font-bold text-slate-600 uppercase whitespace-nowrap">DEPARTEMENT / LOKASI</div>
+                                    </div>
+                                </div>
+                                <div class="asset-value">
+                                    <input type="text" class="asset-input-direct" value="${escapeHtml(card.deptLokasi)}" oninput="updateCardData(${card.id}, 'deptLokasi', this.value)" placeholder="Departement / Lokasi..." required>
+                                </div>
+                            </div>
+
+                            <!-- Row 6 -->
+                            <div class="asset-row">
+                                <div class="asset-label">
+                                    <div class="w-3.5 flex justify-center mr-0.5 text-slate-700">
+                                        <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    </div>
+                                    <div class="leading-none">
+                                        <div class="text-[6.5px] font-bold text-slate-800" style="font-family: 'Noto Sans SC', sans-serif;">使用时间</div>
+                                        <div class="text-[4.5px] font-semibold text-slate-600 uppercase">Waktu Penggunaan</div>
+                                    </div>
+                                </div>
+                                <div class="asset-value">
+                                    <input type="date" class="asset-input-direct" value="${escapeHtml(card.waktuPenggunaan)}" oninput="updateCardData(${card.id}, 'waktuPenggunaan', this.value)" placeholder="Waktu Penggunaan..." required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+          container.appendChild(cutBox);
+
+          requestAnimationFrame(() => {
+            const inputs = cutBox.querySelectorAll(".asset-input-direct");
+            inputs.forEach((input) => autoResizeInput(input));
+          });
+        });
+
+        const countElem = document.getElementById("cardCount");
+        if (countElem) {
+          countElem.textContent = `${cards.length} Label`;
+        }
+
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+
+      function updateCardData(id, field, value) {
+        const card = cards.find((c) => c.id === id);
+        if (card) {
+          card[field] = value;
+          saveCardsToStorage();
+
+          const activeInput = document.activeElement;
+          if (
+            activeInput &&
+            activeInput.classList.contains("asset-input-direct")
+          ) {
+            autoResizeInput(activeInput);
+          }
+        }
+      }
+
+      function addNewCard() {
+        const newId =
+          cards.length > 0 ? Math.max(...cards.map((c) => c.id)) + 1 : 1;
+        cards.push({
+          id: newId,
+          noAset: "",
+          namaAset: "",
+          spesifikasi: "",
+          pengguna: "",
+          deptLokasi: "",
+          waktuPenggunaan: getFormattedToday(),
+        });
+        saveCardsToStorage();
+        renderCards();
+      }
+
+      function deleteCard(id) {
+        cards = cards.filter((c) => c.id !== id);
+        if (cards.length === 0) {
+          cards.push({
+            id: 1,
+            noAset: "",
+            namaAset: "",
+            spesifikasi: "",
+            pengguna: "",
+            deptLokasi: "",
+            waktuPenggunaan: "",
+          });
+        }
+        saveCardsToStorage();
+        renderCards();
+      }
+
+      function fillSampleData() {
+        localStorage.removeItem(STORAGE_KEY);
+
+        cards = [
+          {
+            id: 1,
+            noAset: "50295-IT-BAST-KPS-09-2026",
+            namaAset: "PC DELL INSPIRON 3030 i5",
+            spesifikasi: "CPU 3CWCDF4 | MON G50KR94",
+            pengguna: "TASRIK S. ALI | S0925001907",
+            deptLokasi: "KPS-DISPATCH 运输部",
+            waktuPenggunaan: "2026-09-21",
+          },
+          {
+            id: 2,
+            noAset: "50292-IT-BAST-KPS-09-2026",
+            namaAset: "PC DELL TOWER ECT1250",
+            spesifikasi: "CPU 3727XC4 | MON BFNCS94",
+            pengguna: "WINDA VERONIKA BENAWAN",
+            deptLokasi: "KPS-PRODUKSI - MO P8 R 213",
+            waktuPenggunaan: "2026-09-20",
+          },
+          {
+            id: 3,
+            noAset: "50298-IT-BAST-KPS-09-2026",
+            namaAset: "LAPTOP THINKPAD E14 GEN 4",
+            spesifikasi: "CORE i7 / 16GB / 512GB SSD",
+            pengguna: "BUDI SANTOSO | S0924001102",
+            deptLokasi: "IT & SYSTEMS - LT. 2",
+            waktuPenggunaan: "2026-09-22",
+          },
+          {
+            id: 4,
+            noAset: "50301-IT-BAST-KPS-09-2026",
+            namaAset: "PRINTER ZEBRA ZD230 THERMAL",
+            spesifikasi: "USB | DIRECT THERMAL / RIBBON",
+            pengguna: "LOGISTICS WAREHOUSE",
+            deptLokasi: "KPS-LOGISTIK 仓储部",
+            waktuPenggunaan: "2026-09-25",
+          },
+        ];
+
+        saveCardsToStorage();
+        renderCards();
+      }
+
+      function confirmClearAllCards() {
+        const modal = document.getElementById("clearModal");
+        if (modal) modal.classList.remove("hidden");
+      }
+
+      function closeModal() {
+        const modal = document.getElementById("clearModal");
+        if (modal) modal.classList.add("hidden");
+      }
+
+      function executeClearAllCards() {
+        localStorage.removeItem(STORAGE_KEY);
+
+        cards = [
+          {
+            id: 1,
+            noAset: "",
+            namaAset: "",
+            spesifikasi: "",
+            pengguna: "",
+            deptLokasi: "",
+            waktuPenggunaan: getFormattedToday(),
+          },
+        ];
+
+        saveCardsToStorage();
+        renderCards();
+        closeModal();
+      }
+
+      function escapeHtml(str) {
+        if (!str) return "";
+        return str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
+      function saveToDatabase() {
+        if (!cards || cards.length === 0) {
+          alert("Tidak ada data label untuk disimpan!");
+          return;
+        }
+
+        for (let i = 0; i < cards.length; i++) {
+          const c = cards[i];
+          if (
+            !c.noAset?.trim() ||
+            !c.namaAset?.trim() ||
+            !c.spesifikasi?.trim() ||
+            !c.pengguna?.trim() ||
+            !c.deptLokasi?.trim() ||
+            !c.waktuPenggunaan?.trim()
+          ) {
+            alert(
+              `Gagal Menyimpan!\n\nSemua kolom input pada Label Ke-${i + 1} wajib diisi lengkap.`,
+            );
+            return;
+          }
+        }
+
+        const filledAssetNumbers = cards.map((c) => c.noAset.trim());
+        const duplicates = filledAssetNumbers.filter(
+          (item, index) => filledAssetNumbers.indexOf(item) !== index,
+        );
+
+        if (duplicates.length > 0) {
+          const uniqueDuplicates = [...new Set(duplicates)];
+          alert(
+            `Peringatan: Terdapat Nomor Aset yang ganda!\n\nNo. Aset ganda: ${uniqueDuplicates.join(", ")}`,
+          );
+          return;
+        }
+
+        const badge = document.getElementById("saveBadge");
+        const statusText = document.getElementById("saveStatusText");
+
+        if (statusText) statusText.textContent = "Menyimpan ke DB...";
+        if (badge)
+          badge.className =
+            "inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 border border-amber-200/80 text-[10px] font-semibold px-2.5 py-1 rounded-full transition-all duration-300";
+
+        fetch("label/api/save_labels.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(cards),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              if (statusText) statusText.textContent = "Tersimpan di DB";
+              if (badge)
+                badge.className =
+                  "inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-[10px] font-semibold px-2.5 py-1 rounded-full transition-all duration-300";
+              alert(data.message);
+            } else {
+              alert(data.message);
+              if (statusText) statusText.textContent = "Gagal Simpan";
+              if (badge)
+                badge.className =
+                  "inline-flex items-center gap-1.5 bg-rose-50 text-rose-700 border border-rose-200/80 text-[10px] font-semibold px-2.5 py-1 rounded-full transition-all duration-300";
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert(
+              "Terjadi kesalahan koneksi ke server (File berjalan dalam mode standalone HTML): " +
+                error.message,
+            );
+            if (statusText) statusText.textContent = "Mode Offline";
+          });
+      }
+
+      function getFormattedToday() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, "0");
+        const day = String(today.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      window.addEventListener("DOMContentLoaded", () => {
+        loadSavedCards();
+        renderCards();
+
+        document.addEventListener("input", function (e) {
+          if (e.target.classList.contains("asset-input-direct")) {
+            autoResizeInput(e.target);
+          }
+        });
+
+        setTimeout(() => autoResizeAllInputs(), 100);
+
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      });
+    </script>
+  </body>
+</html>
